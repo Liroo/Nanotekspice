@@ -1,38 +1,61 @@
-PROJECT		= cpp_nanotekspice
+PROJECT = cpp_nanotekspice
 
-SRC_GEN		= main.cpp \
-						test/test.cpp
+OBJ_DIR = obj/
 
-OBJ_GEN		= $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
+# Library
 
-NAME_GEN	= nanotekspice
-SRC_GENDIR	= src/
-OBJ_GENDIR	= obj/
+SRC_LIBDIR = lib/
+OBJ_LIBDIR = $(OBJ_DIR)lib/
+
+SRC_LIB =	test/test.cpp
+OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 
 NAME_LIB = libnanotekspice.a
 
-FLAGS		= -W -Werror -Wextra -Wall
-CFLAGS		= $(FLAGS)
+# General behavior of nanotekspice
+
+SRC_GENDIR = src/
+OBJ_GENDIR = $(OBJ_DIR)src/
+
+SRC_GEN = main.cpp
+OBJ_GEN = $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
+
+NAME_GEN = nanotekspice
+
+# Utility
+
+CC = g++
+FLAGS = -W -Werror -Wextra -Wall
+CFLAGS = $(FLAGS)
+AR = ar
 
 RM		= rm -rf
 
-CC		= g++
+# Rules
 
 all:
-	@make --no-print-directory $(NAME_GEN)
+	@make --no-print-directory $(NAME_LIB) $(NAME_GEN)
+
+$(OBJ_LIBDIR)%.o: $(SRC_LIBDIR)%.cpp
+	@mkdir -p $(dir $@)
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 $(OBJ_GENDIR)%.o: $(SRC_GENDIR)%.cpp
 	@mkdir -p $(dir $@)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-$(NAME_GEN): $(OBJ_GEN) $(MYNAME)
-	$(CC) -o $(NAME_GEN) $(OBJ_GEN)
+$(NAME_LIB): $(OBJ_LIB)
+	$(AR) rcf $(NAME_LIB) $(OBJ_LIB)
+	$(AR) s $(NAME_LIB)
+
+$(NAME_GEN): $(NAME_LIB) $(OBJ_GEN)
+	$(CC) -o $(NAME_GEN) $(OBJ_GEN) -L. -lnanotekspice
 
 clean:
-	$(RM) $(OBJ_GENDIR)
+	$(RM) $(OBJ_DIR)
 
 fclean:	clean
-	$(RM) $(NAME_GEN)
+	$(RM) $(NAME_GEN) $(NAME_LIB)
 
 re: fclean all
 
