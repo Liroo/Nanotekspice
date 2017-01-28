@@ -1,0 +1,11 @@
+# don't add to commit library .a and binary
+
+libnanotekspice.a
+nanotekspice
+
+# don't even think to commit ~, #, tmp, obj files, etc...
+
+*~
+\#*
+*.tmp
+obj/
