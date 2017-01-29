@@ -1,15 +1,13 @@
 #include "Parser.hpp"
 
 nts::Parser::Parser() {
-    std::cout << "Parser" << std::endl;
+  _input = "";
 }
 
-nts::Parser::~Parser() {
-  std::cout << "Bye Parser" << std::endl;
-}
+nts::Parser::~Parser() {}
 
 void nts::Parser::feed(std::string const& input) {
-  (void)input;
+  _input += input;
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {

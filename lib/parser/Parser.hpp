@@ -6,6 +6,9 @@
 
 namespace nts {
   class Parser {
+    private:
+      std::string _input;
+
     public:
       Parser();
       virtual ~Parser();
