@@ -4,30 +4,39 @@ OBJ_DIR = obj/
 
 # Library
 
+NAME_LIB = libnanotekspice.a
+
 SRC_LIBDIR = lib/
 OBJ_LIBDIR = $(OBJ_DIR)lib/
 
-SRC_LIB =	test/test.cpp
+SRC_LIB =	parser/Parser.cpp
+
 OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 
-NAME_LIB = libnanotekspice.a
-
 # General behavior of nanotekspice
+
+NAME_GEN = nanotekspice
 
 SRC_GENDIR = src/
 OBJ_GENDIR = $(OBJ_DIR)src/
 
 SRC_GEN = main.cpp
-OBJ_GEN = $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
 
-NAME_GEN = nanotekspice
+OBJ_GEN = $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
 
 # Utility
 
+INCDIRS := $(addprefix -I,$(shell find $(SRC_LIBDIR) -type d -print))
 CC = g++
 FLAGS = -W -Werror -Wextra -Wall
-CFLAGS = $(FLAGS)
-AR = ar
+FLAGS += -std=c++11
+CFLAGS = $(FLAGS) $(INCDIRS)
+ifeq ($(shell uname), Darwin)
+	AR = ar rc
+else
+	AR = ar rcf
+endif
+RANLIB = ar s
 
 RM		= rm -rf
 
@@ -45,8 +54,8 @@ $(OBJ_GENDIR)%.o: $(SRC_GENDIR)%.cpp
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 $(NAME_LIB): $(OBJ_LIB)
-	$(AR) rcf $(NAME_LIB) $(OBJ_LIB)
-	$(AR) s $(NAME_LIB)
+	$(AR) $(NAME_LIB) $(OBJ_LIB)
+	$(RANLIB) $(NAME_LIB)
 
 $(NAME_GEN): $(NAME_LIB) $(OBJ_GEN)
 	$(CC) -o $(NAME_GEN) $(OBJ_GEN) -L. -lnanotekspice
@@ -58,6 +67,5 @@ fclean:	clean
 	$(RM) $(NAME_GEN) $(NAME_LIB)
 
 re: fclean all
-
 
 .PHONY: all clean fclean re

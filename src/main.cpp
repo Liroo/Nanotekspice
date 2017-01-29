@@ -1,6 +1,7 @@
-void test();
+#include "Parser.hpp"
 
 int main() {
-  test();
+  nts::Parser test = nts::Parser();
+
   return 0;
 }
