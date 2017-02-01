@@ -9,7 +9,9 @@ NAME_LIB = libnanotekspice.a
 SRC_LIBDIR = lib/
 OBJ_LIBDIR = $(OBJ_DIR)lib/
 
-SRC_LIB =	parser/Parser.cpp
+SRC_LIB =	parser/Parser.cpp				\
+					cli/CLI.cpp							\
+					error/BaseException.cpp
 
 OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 

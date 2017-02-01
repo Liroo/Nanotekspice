@@ -15,6 +15,15 @@ namespace nts {
     STRING
   };
 
+  /*
+    during parsing, we have to know current section
+  */
+  enum class ASTSectionType: int {
+    UNDEFINED = -1,
+    CHIPSET = 0,
+    LINK
+  };
+
   typedef struct s_ast_node {
     s_ast_node(std::vector<struct s_ast_node*> *children): children(children) {}
     std::string lexeme;

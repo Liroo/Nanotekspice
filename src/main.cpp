@@ -1,8 +1,10 @@
-#include "Parser.hpp"
+#include <iostream>
+#include "CLI.hpp"
 
-int main() {
-  nts::Parser test = nts::Parser();
+int main(int argc, char *argv[]) {
+  // crash is expected here if there not right params
+  nts::CLI cli(argc, argv);
 
-  test.feed("test");
+  cli.startCLI();
   return 0;
 }
