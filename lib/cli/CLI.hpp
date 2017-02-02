@@ -3,7 +3,10 @@
 
 # include <vector>
 # include <cstdlib>
+# include <fstream>
+# include <sstream>
 # include "CLIException.hpp"
+#include "regex.h"
 
 namespace nts {
   class CLI {
@@ -26,7 +29,7 @@ namespace nts {
     private:
       struct config {
         std::string fileInput;
-        std::vector<std::string> inputValue;
+        std::vector<std::pair<std::string, std::string> > inputValue;
       };
       config _config;
   };

@@ -4,6 +4,7 @@
 # include "BaseException.hpp"
 
 # define ECLIUSAGE "Usage: nanotekspice file [input=value, ...]"
+# define ECLIACCESS "no such file or directory"
 
 namespace nts {
   namespace Exception {
