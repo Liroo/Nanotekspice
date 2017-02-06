@@ -11,7 +11,8 @@ OBJ_LIBDIR = $(OBJ_DIR)lib/
 
 SRC_LIB =	parser/Parser.cpp				\
 					cli/CLI.cpp							\
-					error/BaseException.cpp
+					error/BaseException.cpp	\
+					regex/Regex.cpp
 
 OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 
