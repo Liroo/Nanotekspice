@@ -1,26 +1,52 @@
 #ifndef PARSER_CPP
 # define PARSER_CPP
 
-# include <sstream>
-# include <utility>
-
 # include "IParser.hpp"
 # include "iostream"
+
+# include <sstream>
+# include <fstream>
+# include <utility>
+# include <regex>
+
+# define REG_SECTION "^.((?:links|chipsets)):$"
+# define REG_COM "^#.*$"
+# define REG_EMPTY "^$"
+# define REG_CHIPSET "^(\\w+)\\s+(\\w+)(?:(?:\\((\\w*)\\))|())$"
+# define REG_LINKS "^(\\w+:\\d+)\\s+(\\w+:\\d+)$"
+# define REG_LINK "^(\\w+):(\\d+)$"
 
 namespace nts {
   class Parser {
     private:
       std::string _input;
+      std::string _fileName;
       nts::t_ast_node* _ast;
 
     public:
-      Parser();
+      Parser(const std::string &);
       virtual ~Parser();
 
     public:
       virtual void feed(std::string const& input);
       virtual void parseTree(t_ast_node& root);
       virtual t_ast_node *createTree();
+
+    private:
+      void initTree();
+      nts::t_ast_node *createNode(const std::string &lexeme,
+                                  const nts::ASTNodeType &type,
+                                  const std::string &value = "") const;
+
+    private:
+      // return content of file
+      std::string parseFile(const std::string &) const;
+      // check if the line is a new section, updates the current section if needed
+      bool checkSection(nts::ASTSectionType &, const std::string &) const;
+      // check if a line is in a section it shouldn't
+      void checkWrongSection(const std::string &, const nts::ASTSectionType &) const;
+      void addChipset(const std::string &);
+      void addLink(const std::string &);
 
     private:
       bool isSection(const std::string&);

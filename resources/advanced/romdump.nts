@@ -23,7 +23,7 @@
 
 input			dump
 clock			clock
-input			reset
+input			reset(1)
 
 4069			no
 4040			counter
