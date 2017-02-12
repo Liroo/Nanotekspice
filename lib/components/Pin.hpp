@@ -17,7 +17,8 @@ namespace nts {
 
 class nts::Pin {
   public:
-    Pin(const nts::IComponent *comp = NULL);
+    Pin(const nts::Tristate &state = nts::Tristate::UNDEFINED,
+        const nts::IComponent *comp = NULL);
     ~Pin();
 
   public:
@@ -42,12 +43,13 @@ class nts::FlowChart {
     FlowChart(const std::pair<Pin *, Pin *> &inputs, const Pin &output, const nts::GateType &type);
     ~FlowChart() {};
 
+  public:
+    static bool NOR(const Pin *);
+
   private:
     std::pair<Pin *, Pin *> _inputs;
     Pin *_output;
     GateType _type;
-
-  private:
     std::map<GateType, compPtr_t> _fn;
 };
 

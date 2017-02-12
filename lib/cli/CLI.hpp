@@ -6,7 +6,7 @@
 # include <fstream>
 # include <sstream>
 # include "CLIException.hpp"
-#include "regex.h"
+# include "Parser.hpp"
 
 namespace nts {
   class CLI {

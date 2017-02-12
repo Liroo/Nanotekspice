@@ -1,9 +1,9 @@
 #include "IComponent.hpp"
 
-nts::Pin::Pin(const nts::IComponent *comp) {
+nts::Pin::Pin(const nts::Tristate &state, const nts::IComponent *comp) {
   _gate = NULL;
   _comp = const_cast<IComponent *>(comp);
-  _state = comp ? comp->getState() : nts::Tristate::UNDEFINED;
+  _state = state;
 }
 
 void nts::Pin::setComp(const IComponent *newComp) {
@@ -26,9 +26,7 @@ void nts::Pin::setGate(const nts::FlowChart *gate) {
   _gate = const_cast<nts::FlowChart *>(gate);
 }
 
-static bool compNOR(const nts::Pin *);
-
-std::map<nts::GateType, compPtr_t> _fn = { { nts::GateType::NOR, &compNOR } };
+std::map<nts::GateType, compPtr_t> _fn = { { nts::GateType::NOR, &nts::FlowChart::NOR } };
 
 nts::FlowChart::FlowChart(const std::pair<nts::Pin *, nts::Pin *> &inputs,
                           const nts::Pin &output,
@@ -38,7 +36,7 @@ nts::FlowChart::FlowChart(const std::pair<nts::Pin *, nts::Pin *> &inputs,
   _type = type;
 }
 
-static bool compNOR(const nts::Pin *pin) {
+bool nts::FlowChart::NOR(const nts::Pin *pin) {
   (void)pin;
   return true;
 }

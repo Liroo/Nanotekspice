@@ -7,11 +7,10 @@ namespace nts {
 
 # include "AComponent.hpp"
 
-
 class nts::C4001 : public nts::AComponent {
   public:
     C4001(const std::string &name);
-    virtual ~C4001();
+    virtual ~C4001() {};
 };
 
 #endif /* COMP4001_HPP */

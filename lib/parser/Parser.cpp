@@ -1,29 +1,15 @@
 #include "Parser.hpp"
 
-// Parser implementation
-//
-// a                   b                c
-// compo++-------------+----------------+-------------->
-// |                   |                |
-// links+-------->a:1  |                |
-//                 b:1 |                |
-//                     |                |
-//                links+----------->b:1 |
-//                                  a:1 |
-//                                ->b:2 |
-//                                  c:1 |
-//                                      |
-//                                 links+--------->c:1
-//                                                 b:2
-
-
-nts::Parser::Parser(const std::string &fileName) {
-  _fileName = fileName;
+nts::Parser::Parser() {
   _input = "";
   _ast = NULL;
 }
 
 nts::Parser::~Parser() {}
+
+void nts::Parser::feed(std::string const& input) {
+  _input += input;
+}
 
 nts::t_ast_node *nts::Parser::createNode(const std::string &lexeme,
                                           const nts::ASTNodeType &type,
@@ -41,18 +27,6 @@ void nts::Parser::initTree() {
   _ast->children->push_back(this->createNode("components list", nts::ASTNodeType::COMPONENT));
   _ast->children->push_back(this->createNode("link list", nts::ASTNodeType::LINK));
   _ast->children->push_back(this->createNode("link_end list", nts::ASTNodeType::LINK_END));
-}
-
-std::string nts::Parser::parseFile(const std::string &fileName) const {
-  std::ifstream fs;
-  std::ostringstream stream;
-
-  fs.open(fileName);
-  if (fs.is_open()) {
-    stream << fs.rdbuf();
-    fs.close();
-  }
-  return stream.str();
 }
 
 bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::string &line) const {
@@ -75,6 +49,7 @@ bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::s
 void nts::Parser::checkWrongSection(const std::string &line, const nts::ASTSectionType &currentSection) const {
   (void)line;
   (void)currentSection;
+  // to do
 }
 
 void nts::Parser::addChipset(const std::string &line) {
@@ -91,7 +66,7 @@ void nts::Parser::addLink(const std::string &line) {
 }
 
 nts::t_ast_node* nts::Parser::createTree() {
-  std::istringstream input(this->parseFile(_fileName));
+  std::istringstream input(_input);
   std::string line;
   ASTSectionType currentSection = nts::ASTSectionType::UNDEFINED;
   std::smatch matched;
@@ -101,7 +76,6 @@ nts::t_ast_node* nts::Parser::createTree() {
   this->initTree();
   // loop file to store each line in `line` var and analyse it
   while (std::getline(input, line)) {
-    std::cout << line << std::endl;
     if (!this->checkSection(currentSection, line) &&
         !std::regex_match(line, regCom) && !std::regex_match(line, regEmpty)) {
         this->checkWrongSection(line, currentSection);
@@ -112,10 +86,44 @@ nts::t_ast_node* nts::Parser::createTree() {
   return _ast;
 }
 
-void nts::Parser::feed(std::string const& input) {
-  _input += input;
+void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::string>> &inputValues) {
+  std::vector<std::pair<std::string, std::string>>::const_iterator itVal = inputValues.begin();
+
+  std::vector<nts::IComponent *>::iterator itComp;
+  return;
+  while (itVal != inputValues.end()) {
+    itComp = _comps.begin();
+    while (itComp != _comps.end() && (*itComp)->getName() != (*itVal).first) {
+      *itComp++;
+    }
+    //(*itComp)
+    // thhrow if (itVal == inputValues.end())
+    *itVal++;
+  }
+}
+
+void nts::Parser::initComps(const int &size) {
+  int i = 0;
+  while (i < size) {
+    _comps.push_back(NULL);
+    i++;
+  }
+}
+
+static nts::IComponent *transfComp(const nts::t_ast_node *comp) {
+  std::smatch matched;
+  std::regex regComp(comp->lexeme);
+  std::string value;
+  nts::IComponent *newNode;
+
+  std::regex_search(comp->value.cbegin(), comp->value.cend(), matched, regComp);
+  value = matched[2].str() + matched[3].str();
+  newNode = nts::AComponent::createComponent(matched[1].str(), value);
+  return newNode;
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {
-  (void)root;
+  return;
+  this->initComps((int)(*root.children)[0]->children->size());
+  std::transform((*root.children)[0]->children->begin(), (*root.children)[0]->children->end(), _comps.begin(), transfComp);
 }

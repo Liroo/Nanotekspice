@@ -2,12 +2,14 @@
 # define PARSER_CPP
 
 # include "IParser.hpp"
-# include "iostream"
-
+# include "AComponent.hpp"
+# include <iostream>
 # include <sstream>
 # include <fstream>
 # include <utility>
 # include <regex>
+
+# define REG_INPUTCLI "^(\\w+)=(\\w+)"
 
 # define REG_SECTION "^.((?:links|chipsets)):$"
 # define REG_COM "^#.*$"
@@ -20,27 +22,27 @@ namespace nts {
   class Parser {
     private:
       std::string _input;
-      std::string _fileName;
       nts::t_ast_node* _ast;
+      std::vector<nts::IComponent *> _comps;
 
     public:
-      Parser(const std::string &);
+      Parser();
       virtual ~Parser();
 
     public:
       virtual void feed(std::string const& input);
       virtual void parseTree(t_ast_node& root);
       virtual t_ast_node *createTree();
+      void setInputValues(const std::vector<std::pair<std::string, std::string>> &);
 
     private:
       void initTree();
       nts::t_ast_node *createNode(const std::string &lexeme,
                                   const nts::ASTNodeType &type,
                                   const std::string &value = "") const;
+      void initComps(const int &);
 
     private:
-      // return content of file
-      std::string parseFile(const std::string &) const;
       // check if the line is a new section, updates the current section if needed
       bool checkSection(nts::ASTSectionType &, const std::string &) const;
       // check if a line is in a section it shouldn't

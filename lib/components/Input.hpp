@@ -10,10 +10,7 @@ namespace nts {
 class nts::Input : public nts::AComponent {
   public:
     Input(const std::string &name, const nts::Tristate &state = nts::Tristate::UNDEFINED);
-    virtual ~Input();
-    virtual nts::Tristate getState() const;
-  private:
-    nts::Tristate _state;
+    virtual ~Input() {};
 };
 
 #endif /* INPUT_HPP */
