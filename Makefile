@@ -34,7 +34,7 @@ OBJ_GEN = $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
 
 INCDIRS := $(addprefix -I,$(shell find $(SRC_LIBDIR) -type d -print))
 CC = g++
-FLAGS = -W -Werror -Wextra -Wall
+FLAGS = -W -Werror -Wextra -Wall -g
 FLAGS += -std=c++11
 CFLAGS = $(FLAGS) $(INCDIRS)
 ifeq ($(shell uname), Darwin)

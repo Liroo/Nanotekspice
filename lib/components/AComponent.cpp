@@ -8,7 +8,7 @@ void nts::AComponent::initPins(const int &size, const nts::Tristate &state) {
   int i = 1;
 
   while (i <= size) {
-    _pins[i] = new Pin(state);
+    _pins[i] = new Pin(reinterpret_cast<nts::IComponent *>(this), i, state);
     i++;
   }
 }
@@ -32,12 +32,13 @@ void nts::AComponent::setValue(const nts::Tristate &state) {
 void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
-  _pins[pin_num_this]->setComp(&component);
-  (component.getPins())[pin_num_target]->setComp(this);
+  // check logical links error
+  _pins[pin_num_this]->setComp(&component, pin_num_target);
+  (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
 }
 
-void dumpName(const std::pair<int, nts::Pin *>pin) {
-  if (pin.second->getComp()->getType() == "input") {
+static void dumpName(const std::pair<int, nts::Pin *>pin) {
+  if (pin.second->getLinkedComp()->getType() == "input") {
     std::cout << pin.second->getState();
   }
   else { std::cout << "not an input"; }
@@ -62,6 +63,25 @@ nts::IComponent *nts::AComponent::createComponent(const std::string &type, const
 }
 
 nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
-  (void)pin_num_this;
-  return nts::Tristate::UNDEFINED;
+  // throw if invalid pin num
+
+  // if pin is connected to an input-type (true, false, input, clock), return its state
+  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPE))) {
+    return _pins[pin_num_this]->getState();
+  }
+
+  nts::FlowChart *gate = _pins[pin_num_this]->getGate();
+  std::pair<nts::Pin *, nts::Pin *> inputs = gate->getInputs();
+  nts::Pin *output = gate->getOutput();
+
+  if (_pins[pin_num_this] == inputs.first || _pins[pin_num_this] == inputs.second) {
+    nts::Pin *linked = _pins[pin_num_this]->getLinkedPin();
+    _pins[pin_num_this]->setState(linked->getOwner()->Compute(linked->getID()));
+  } else {
+    // compute both input then output
+    (inputs.first)->setState((inputs.first)->getLinkedComp()->Compute((inputs.first)->getLinkedPin()->getID()));
+    (inputs.second)->setState((inputs.second)->getLinkedComp()->Compute((inputs.second)->getLinkedPin()->getID()));
+    output->setState(gate->Exec());
+  }
+  return _pins[pin_num_this]->getState();
 }

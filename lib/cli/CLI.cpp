@@ -81,7 +81,10 @@ void nts::CLI::display() const {}
 
 void nts::CLI::inputModifier() {}
 
-void nts::CLI::simulate() {}
+void nts::CLI::simulate() {
+  
+
+}
 
 void nts::CLI::loop() {}
 

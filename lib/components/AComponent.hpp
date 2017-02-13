@@ -10,6 +10,8 @@ namespace nts {
 
 typedef std::function<nts::IComponent *(const std::string &)> createFn_t;
 
+# define REG_INPUTTYPE "^(?:input|clock|true|false)$"
+
 class nts::AComponent : public nts::IComponent {
   public:
     AComponent(const std::string &, const nts::Tristate &state = nts::Tristate::UNDEFINED);
@@ -35,7 +37,6 @@ class nts::AComponent : public nts::IComponent {
     static IComponent *createComponent(const std::string &type, const std::string &value);
     static IComponent *create4001(const std::string &value);
     static IComponent *createInput(const std::string &value);
-  protected:
     static std::map<std::string, createFn_t> _fn;
 
   protected:

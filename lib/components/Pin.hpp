@@ -4,12 +4,17 @@
 # include <cstddef>
 # include <utility>
 # include <map>
+# include <regex>
 # include "IComponent.hpp"
 
 namespace nts {
   enum GateType {
     UNKNOWN = -1,
-    NOR
+    NOR,
+    NAND,
+    OR,
+    AND,
+    XOR
   };
   class Pin;
   class FlowChart;
@@ -17,26 +22,31 @@ namespace nts {
 
 class nts::Pin {
   public:
-    Pin(const nts::Tristate &state = nts::Tristate::UNDEFINED,
+    Pin(const nts::IComponent *, const int &id, const nts::Tristate &state = nts::Tristate::UNDEFINED,
         const nts::IComponent *comp = NULL);
     ~Pin();
 
   public:
-    void setComp(const nts::IComponent *newComp);
-    IComponent *getComp() const;
+    void setComp(const nts::IComponent *newComp, const int &pin);
+    IComponent *getLinkedComp() const;
+    IComponent *getOwner() const;
     void setState(const nts::Tristate &newState);
     Tristate getState() const;
-
-  private:
+    int getID() const;
+    nts::Pin *getLinkedPin() const;
     void setGate(const nts::FlowChart *);
+    nts::FlowChart *getGate() const;
 
   private:
     FlowChart *_gate;
-    IComponent *_comp;
+    IComponent *_linkedComp;
+    IComponent *_owner;
+    Pin *_linkedPin;
     Tristate _state;
+    int _id;
 };
 
-typedef bool (*compPtr_t)(const nts::Pin *);
+typedef std::function<nts::Tristate(const nts::FlowChart *)> gateFn_t;
 
 class nts::FlowChart {
   public:
@@ -44,13 +54,23 @@ class nts::FlowChart {
     ~FlowChart() {};
 
   public:
-    static bool NOR(const Pin *);
+    nts::Tristate Exec() const;
+    static nts::Tristate NOR(const nts::FlowChart *);
+    static nts::Tristate OR(const nts::FlowChart *);
+    static nts::Tristate AND(const nts::FlowChart *);
+    static nts::Tristate NAND(const nts::FlowChart *);
+    static nts::Tristate XOR(const nts::FlowChart *);
+    static std::map<GateType, gateFn_t> _gateFn;
+
+  public:
+    nts::Pin *getOutput() const;
+    nts::GateType getType() const;
+    std::pair<Pin *, Pin *> getInputs() const;
 
   private:
     std::pair<Pin *, Pin *> _inputs;
     Pin *_output;
     GateType _type;
-    std::map<GateType, compPtr_t> _fn;
 };
 
 #endif /* PIN_HPP */

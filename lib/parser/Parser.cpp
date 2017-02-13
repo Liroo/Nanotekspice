@@ -109,14 +109,25 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
     int value;
 
     if (it != _comps.end()) {
+      // check type input
       std::stringstream(inputValue.second) >> value;
-      _comps[inputValue.first]->setValue((nts::Tristate)value);
+      _comps[inputValue.first]->getPins()[1]->setState((nts::Tristate)value);
     }
     else {
       std::cout << "not found: " << inputValue.first << std::endl;
       // throw ?
     }
   });
+
+
+
+
+
+
+
+  //std::cout << "compute first return " << _comps["first"]->Compute(1) << std::endl;
+  //std::cout << "compute toto first pin return " << _comps["toto"]->Compute(1) << std::endl;
+  std::cout << "compute toto third pin return " << _comps["toto"]->Compute(3) << std::endl;
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {
@@ -146,6 +157,8 @@ void nts::Parser::parseTree(t_ast_node& root) {
     std::regex_search((*(*root.children)[2]->children)[i]->value, matchedSecond, regLink);
     std::stringstream(matched[2].str()) >> firstPin;
     std::stringstream(matchedSecond[2].str()) >> secondPin;
+    std::cout << "set link between " << matched[1].str() << ": " << firstPin << " ";
+    std::cout << "and " << matchedSecond[1].str() << ": " << secondPin << std::endl;
     _comps[matched[1].str()]->SetLink(firstPin, *_comps[matchedSecond[1].str()], secondPin);
     i++;
   }
