@@ -8,6 +8,8 @@
 # include "CLIException.hpp"
 # include "Parser.hpp"
 
+# define REG_INPUTCLI "^(\\w+)=([01])"
+
 namespace nts {
   class CLI {
     public:
@@ -25,6 +27,9 @@ namespace nts {
       void simulate();
       void loop();
       void dump() const;
+
+    private:
+      void extractInputValue(const std::string &arg);
 
     private:
       struct config {

@@ -9,8 +9,6 @@
 # include <utility>
 # include <regex>
 
-# define REG_INPUTCLI "^(\\w+)=(\\w+)"
-
 # define REG_SECTION "^.((?:links|chipsets)):$"
 # define REG_COM "^#.*$"
 # define REG_EMPTY "^$"
