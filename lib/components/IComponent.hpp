@@ -13,6 +13,8 @@ namespace nts {
 # include "Pin.hpp"
 # include <iostream>
 # include <map>
+# include <string>
+# include <vector>
 # include <algorithm>
 
 

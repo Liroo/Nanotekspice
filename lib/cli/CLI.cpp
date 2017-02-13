@@ -45,8 +45,8 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     { "exit", [this]() { this->exitCLI(); } },
     { "display", [this]() { this->display(); } },
     { "inputModifier", [this]() { this->inputModifier(); } },
-    { "simulate", [this]() { this->simulate(); } }
-    { "loop", [this]() { this->loop(); } }
+    { "simulate", [this]() { this->simulate(); } },
+    { "loop", [this]() { this->loop(); } },
     { "dump", [this]() { this->dump(); } }
   };
 } catch (const nts::Exception::CLIException& e) {
