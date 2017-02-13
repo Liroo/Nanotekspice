@@ -33,6 +33,22 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     // Extract InputValue from argument here, throw an error if therte is a bad syntax
     extractInputValue(std::string(argv[i]));
   }
+
+  /*
+    Init function pointer for CLI
+    We was searching a badass way to create function pointer on c++11 with Sammy
+    and we found this, it looks cool, using lambda function and map
+    So in reading of command we can direct using command from map without searching it,
+    just access his value by name
+  */
+  _cmd = {
+    { "exit", [this]() { this->exitCLI(); } },
+    { "display", [this]() { this->display(); } },
+    { "inputModifier", [this]() { this->inputModifier(); } },
+    { "simulate", [this]() { this->simulate(); } }
+    { "loop", [this]() { this->loop(); } }
+    { "dump", [this]() { this->dump(); } }
+  };
 } catch (const nts::Exception::CLIException& e) {
   // get output stream and print error
   e.getOs() << e.what() << std::endl;
@@ -40,7 +56,9 @@ nts::CLI::CLI(int argc, char *argv[]) try {
   exit(0);
 }
 
-nts::CLI::~CLI() {}
+nts::CLI::~CLI() {
+  // everything should be deleted automaticly :')
+}
 
 void nts::CLI::startCLI() {
   std::istringstream input(_config.fileInput);
@@ -56,6 +74,19 @@ void nts::CLI::startCLI() {
   parser.parseTree(*root);
   parser.setInputValues(_config.inputValue);
 }
+
+void nts::CLI::exitCLI() {}
+
+void nts::CLI::display() const {}
+
+void nts::CLI::inputModifier() {}
+
+void nts::CLI::simulate() {}
+
+void nts::CLI::loop() {}
+
+void nts::CLI::dump() const {}
+
 
 void nts::CLI::extractInputValue(const std::string &arg) {
   std::regex regexInput(REG_INPUTCLI);

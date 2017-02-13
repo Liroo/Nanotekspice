@@ -5,6 +5,7 @@
 # include <cstdlib>
 # include <fstream>
 # include <sstream>
+# include <functional>
 # include "CLIException.hpp"
 # include "Parser.hpp"
 
@@ -30,6 +31,10 @@ namespace nts {
 
     private:
       void extractInputValue(const std::string &arg);
+
+    private:
+      typedef std::function<void()> CLICommand;
+      std::map<std::string, CLICommand> _cmd;
 
     private:
       struct config {
