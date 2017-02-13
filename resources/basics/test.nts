@@ -1,9 +1,10 @@
 .chipsets:
 4001 toto
 input first
+input error()
 
 input second
 4001 titi
 
 .links:
-first:1 toto:1
+first:1 toto:12

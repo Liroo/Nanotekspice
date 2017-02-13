@@ -12,16 +12,20 @@
 # define REG_SECTION "^.((?:links|chipsets)):$"
 # define REG_COM "^#.*$"
 # define REG_EMPTY "^$"
-# define REG_CHIPSET "^(\\w+)\\s+(\\w+)(?:(?:\\((\\w*)\\))|())$"
+//# define REG_CHIPSET "^(\\w+)\\s+(\\w+)(?:(?:\\((\\w*)\\))|())$"
+# define REG_SPECHIPSET "^(2716)\\s+(\\w+\\(\\w+\\))$"
+# define REG_CHIPSET "^(\\w+)\\s+(\\w+)$"
 # define REG_LINKS "^(\\w+:\\d+)\\s+(\\w+:\\d+)$"
 # define REG_LINK "^(\\w+):(\\d+)$"
+
+typedef std::map<std::string, std::map<std::string, nts::IComponent *>> compsMap_t;
 
 namespace nts {
   class Parser {
     private:
       std::string _input;
       nts::t_ast_node* _ast;
-      std::vector<nts::IComponent *> _comps;
+      std::map<std::string, nts::IComponent *> _comps;
 
     public:
       Parser();

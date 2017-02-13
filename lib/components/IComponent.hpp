@@ -35,6 +35,7 @@ class nts::IComponent {
     virtual std::map<int, nts::Pin *> getPins() const = 0;
     virtual std::string getName() const = 0;
     virtual std::string getType() const = 0;
+    virtual void setValue(const nts::Tristate &) = 0;
 };
 
 #endif /* ICOMPONENT_HPP */

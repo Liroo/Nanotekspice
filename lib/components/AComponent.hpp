@@ -5,13 +5,14 @@ namespace nts {
   class AComponent;
 };
 
+# include <functional>
 # include "IComponent.hpp"
 
-typedef nts::IComponent *(*creatPtr_t)(const std::string &value);
+typedef std::function<nts::IComponent *(const std::string &)> createFn_t;
 
 class nts::AComponent : public nts::IComponent {
   public:
-    AComponent(const std::string &);
+    AComponent(const std::string &, const nts::Tristate &state = nts::Tristate::UNDEFINED);
     virtual ~AComponent() {};
 
   public:
@@ -25,6 +26,7 @@ class nts::AComponent : public nts::IComponent {
     virtual std::string getName() const;
     virtual std::string getType() const;
     virtual std::map<int, nts::Pin *> getPins() const;
+    virtual void setValue(const nts::Tristate &);
 
   protected:
     void initPins(const int &, const Tristate &state = Tristate::UNDEFINED);
@@ -34,11 +36,12 @@ class nts::AComponent : public nts::IComponent {
     static IComponent *create4001(const std::string &value);
     static IComponent *createInput(const std::string &value);
   protected:
-    static std::map<std::string, creatPtr_t> _fn;
+    static std::map<std::string, createFn_t> _fn;
 
   protected:
     std::string _name;
     std::string _type;
+    nts::Tristate _value;
     std::vector<nts::FlowChart *> _gates;
     std::map<int, nts::Pin *> _pins;
 };

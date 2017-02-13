@@ -1,11 +1,8 @@
 #include "AComponent.hpp"
 
-/*static nts::IComponent *create4001(const std::string &value);
-static nts::IComponent *createInput(const std::string &value);
-*/
-std::map<std::string, creatPtr_t> nts::AComponent::_fn = { { "4001", &nts::AComponent::create4001 }, { "input", &nts::AComponent::createInput } };
+std::map<std::string, createFn_t> nts::AComponent::_fn = { { "4001", &nts::AComponent::create4001 }, { "input", &nts::AComponent::createInput } };
 
-nts::AComponent::AComponent(const std::string &name) { _name = name; }
+nts::AComponent::AComponent(const std::string &name, const nts::Tristate &value) { _name = name; _value = value; }
 
 void nts::AComponent::initPins(const int &size, const nts::Tristate &state) {
   int i = 1;
@@ -28,10 +25,15 @@ std::string nts::AComponent::getType() const {
   return _type;
 }
 
+void nts::AComponent::setValue(const nts::Tristate &state) {
+  _value = state;
+}
+
 void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
-  _pins[pin_num_this]->setComp((component.getPins())[pin_num_target]->getComp());
+  _pins[pin_num_this]->setComp(&component);
+  (component.getPins())[pin_num_target]->setComp(this);
 }
 
 void dumpName(const std::pair<int, nts::Pin *>pin) {
@@ -52,7 +54,7 @@ nts::IComponent *nts::AComponent::create4001(const std::string &value) {
 }
 
 nts::IComponent *nts::AComponent::createInput(const std::string &value) {
-  return reinterpret_cast<nts::IComponent *>(new nts::Input(value, nts::Tristate::TRUE));
+  return reinterpret_cast<nts::IComponent *>(new nts::Input(value));
 }
 
 nts::IComponent *nts::AComponent::createComponent(const std::string &type, const std::string &value){
