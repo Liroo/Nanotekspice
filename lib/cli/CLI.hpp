@@ -111,7 +111,12 @@ namespace nts {
         std::vector<std::pair<std::string, std::string> > inputValue;
       };
       config _config;
-  }; // namespace nts
-};
+
+    public: // COMMANDS REFERENCE
+      class Dump;
+      class Display;
+      class Simulate;
+  };
+}; // namespace nts
 
 #endif

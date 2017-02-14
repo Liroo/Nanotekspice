@@ -1,5 +1,9 @@
 #include "CLI.hpp"
 
+#include "Simulate.hpp"
+#include "Display.hpp"
+#include "Dump.hpp"
+
 /*
   Init CLI by:
   - extracting file content
@@ -155,22 +159,27 @@ bool nts::CLI::help() {
 }
 
 bool nts::CLI::display() const {
-  std::cout << "display" << std::endl;
+  nts::CLI::Display display;
+
   return true;
 }
 
 bool nts::CLI::simulate() {
-  std::cout << "simulate" << std::endl;
+  nts::CLI::Simulate simulate;
+
   return true;
 }
 
 bool nts::CLI::loop() {
+  // Should loop simulate :)
   std::cout << "loop" << std::endl;
+
   return true;
 }
 
 bool nts::CLI::dump() const {
-  std::cout << "dump" << std::endl;
+  nts::CLI::Dump dump;
+
   return true;
 }
 

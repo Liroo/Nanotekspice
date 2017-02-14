@@ -11,6 +11,9 @@ OBJ_LIBDIR = $(OBJ_DIR)lib/
 
 SRC_LIB =	parser/Parser.cpp						\
 					cli/CLI.cpp									\
+					cli/command/Display.cpp			\
+					cli/command/Dump.cpp				\
+					cli/command/Simulate.cpp		\
 					error/BaseException.cpp			\
 					components/AComponent.cpp		\
 					components/Pin.cpp					\
