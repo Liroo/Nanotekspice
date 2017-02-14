@@ -22,8 +22,11 @@ namespace nts {
 
 class nts::Pin {
   public:
-    Pin(const nts::IComponent *, const int &id, const nts::Tristate &state = nts::Tristate::UNDEFINED,
-        const nts::IComponent *comp = NULL);
+    Pin(const nts::IComponent *,
+        const int &id,
+        const nts::Tristate &state = nts::Tristate::UNDEFINED,
+        const nts::IComponent *comp = NULL,
+        const nts::Tristate &computed = nts::Tristate::FALSE);
     ~Pin();
 
   public:
@@ -36,6 +39,8 @@ class nts::Pin {
     nts::Pin *getLinkedPin() const;
     void setGate(const nts::FlowChart *);
     nts::FlowChart *getGate() const;
+    void setComputed(const nts::Tristate &);
+    nts::Tristate getComputed() const;
 
   private:
     FlowChart *_gate;
@@ -44,6 +49,7 @@ class nts::Pin {
     Pin *_linkedPin;
     Tristate _state;
     int _id;
+    Tristate _computed;
 };
 
 typedef std::function<nts::Tristate(const nts::FlowChart *)> gateFn_t;
@@ -65,10 +71,10 @@ class nts::FlowChart {
   public:
     nts::Pin *getOutput() const;
     nts::GateType getType() const;
-    std::pair<Pin *, Pin *> getInputs() const;
+    std::vector<Pin *> getInputs() const;
 
   private:
-    std::pair<Pin *, Pin *> _inputs;
+    std::vector<Pin *> _inputs;
     Pin *_output;
     GateType _type;
 };

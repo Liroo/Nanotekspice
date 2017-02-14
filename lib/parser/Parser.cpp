@@ -39,7 +39,7 @@ bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::s
     else if (matched[1] == "chipsets") { currentSection = nts::ASTSectionType::CHIPSET; }
     else {
       currentSection = nts::ASTSectionType::UNDEFINED;
-      throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSINVALIDSECTION);
+      throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSINVALIDSECTION);
     }
     return true;
   }
@@ -50,7 +50,7 @@ void nts::Parser::checkWrongSection(const std::string &line, const nts::ASTSecti
   if ((currentSection == nts::ASTSectionType::CHIPSET &&
       !std::regex_match(line, std::regex(REG_CHIPSET)) && !std::regex_match(line, std::regex(REG_SPECHIPSET))) ||
       ((currentSection == nts::ASTSectionType::LINK && !std::regex_match(line, std::regex(REG_LINKS))))) {
-    throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX);
+    throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSBADSYNTAX);
   }
 }
 
@@ -59,10 +59,9 @@ void nts::Parser::addChipset(const std::string &line) {
   std::smatch matched;
 
   // check availables types
-
   if (std::regex_match(line, std::regex(REG_SPECHIPSET))) { lexem = REG_SPECHIPSET; }
   else if (std::regex_match(line, std::regex(REG_CHIPSET))) { lexem = REG_CHIPSET; }
-  else { throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX); }
+  else { throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSBADSYNTAX); }
   std::regex_search(line, matched, std::regex(lexem));
 
   // check if this chipset's name already exists
@@ -73,7 +72,7 @@ void nts::Parser::addChipset(const std::string &line) {
         std::regex_search(comp->value, matchedComp, std::regex(comp->lexeme));
         return matchedComp[2].str() == matched[2].str();
       }) != (*_ast->children)[0]->children->end()) {
-        throw nts::Exception::PARSERException(std::cerr, matched[2].str() + ": " + EPARSARGEXISTS);
+        throw nts::Exception::ParserException(std::cerr, matched[2].str() + ": " + EPARSARGEXISTS);
       }
   (*_ast->children)[0]->children->push_back(this->createNode(lexem, nts::ASTNodeType::COMPONENT, line));
 }
@@ -82,7 +81,7 @@ void nts::Parser::addLink(const std::string &line) {
   std::smatch matched;
   std::regex regLinks(REG_LINKS);
 
-  if (!std::regex_match(line, regLinks)) { throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX); }
+  if (!std::regex_match(line, regLinks)) { throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSBADSYNTAX); }
   std::regex_search(line, matched, regLinks);
   (*_ast->children)[1]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK, matched[1]));
   (*_ast->children)[2]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK_END, matched[2]));
@@ -111,8 +110,8 @@ nts::t_ast_node* nts::Parser::createTree() {
       }
     }
     //  check if there are components and links
-    if ((*_ast->children)[0]->children->size() == 0) { throw nts::Exception::PARSERException(std::cerr, EPARSMISSINGCHIPSETS); }
-    else if ((*_ast->children)[1]->children->size() == 0) { throw nts::Exception::PARSERException(std::cerr, EPARSMISSINGLINKS); }
+    if ((*_ast->children)[0]->children->size() == 0) { throw nts::Exception::ParserException(std::cerr, EPARSMISSINGCHIPSETS); }
+    else if ((*_ast->children)[1]->children->size() == 0) { throw nts::Exception::ParserException(std::cerr, EPARSMISSINGLINKS); }
 
   return _ast;
 }
@@ -128,14 +127,14 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
     if (it != _comps.end()) {
       //  check if variable initialized in args is an input
       if ((*it).second->getType() != "input" && (*it).second->getType() == "clock") {
-        throw nts::Exception::PARSERException(std::cerr, (*it).second->getType() + " " + inputValue.first + ": " + EPARSARGBADTYPE);
+        throw nts::Exception::ParserException(std::cerr, (*it).second->getType() + " " + inputValue.first + ": " + EPARSARGBADTYPE);
       }
       std::stringstream(inputValue.second) >> value;
       _comps[inputValue.first]->getPins()[1]->setState((nts::Tristate)value);
     }
     else {
       //  variable initialized but not defined in the config file
-      throw nts::Exception::PARSERException(std::cerr, inputValue.first + ": " + EPARSARGNOTFOUND);
+      throw nts::Exception::ParserException(std::cerr, inputValue.first + ": " + EPARSARGNOTFOUND);
     }
   });
 
@@ -147,7 +146,7 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
         return ((pair.second)->getType() == "input" || (pair.second)->getType() == "clock") &&
                 (pair.second->getPins()[1])->getState() == nts::Tristate::UNDEFINED;
       })) != _comps.end()) {
-      throw nts::Exception::PARSERException(std::cerr, (*itPair).first + ": " + EPARSARGNOTSET);
+      throw nts::Exception::ParserException(std::cerr, (*itPair).first + ": " + EPARSARGNOTSET);
     }
 
 
@@ -155,6 +154,8 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
   //std::cout << "compute toto first pin return " << _comps["toto"]->Compute(1) << std::endl;
   std::cout << "compute toto third pin return " << _comps["toto"]->Compute(3) << std::endl;
   std::cout << "compute toto third pin return " << _comps["toto"]->Compute(4) << std::endl;
+
+  _comps["toto"]->Dump();
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {
@@ -185,9 +186,14 @@ void nts::Parser::parseTree(t_ast_node& root) {
     std::stringstream(matchedSecond[2].str()) >> secondPin;
     std::cout << "set link between " << matched[1].str() << ": " << firstPin << " ";
     std::cout << "and " << matchedSecond[1].str() << ": " << secondPin << std::endl;
+    //TODO check if chipsets to link exists
     _comps[matched[1].str()]->SetLink(firstPin, *_comps[matchedSecond[1].str()], secondPin);
     i++;
   }
 
-  // TODO Check if every links needed is here
+  // TODO Check if every link needed is here
+}
+
+std::map<std::string, nts::IComponent *> &nts::Parser::getCompsMap() {
+  return _comps;
 }

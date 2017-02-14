@@ -1,6 +1,10 @@
 #include "AComponent.hpp"
 
-std::map<std::string, createFn_t> nts::AComponent::_fn = { { "4001", &nts::AComponent::create4001 }, { "input", &nts::AComponent::createInput } };
+std::map<std::string, createFn_t> nts::AComponent::_fn = {
+  { "4001", &nts::AComponent::create4001 },
+  { "input", &nts::AComponent::createInput },
+  { "output", &nts::AComponent::createOutput }
+};
 
 nts::AComponent::AComponent(const std::string &name) { _name = name; }
 
@@ -25,6 +29,19 @@ std::string nts::AComponent::getType() const {
   return _type;
 }
 
+void nts::AComponent::resetPins() const {
+  std::for_each(_pins.begin(), _pins.end(),
+  [](const std::pair<int, nts::Pin *> &pair) {
+    if (pair.second->getComputed() != nts::Tristate::UNDEFINED) {
+      (pair.second)->setComputed(nts::Tristate::FALSE);
+    }
+    nts::IComponent *linked = (pair.second)->getLinkedComp();
+    if (linked && !std::regex_match(linked->getType(), std::regex(REG_INPUTTYPE))) {
+      (pair.second)->setState(nts::Tristate::FALSE);
+    }
+  });
+}
+
 void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
@@ -36,17 +53,57 @@ void nts::AComponent::SetLink(size_t pin_num_this,
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
 }
 
-static void dumpName(const std::pair<int, nts::Pin *>pin) {
-  if (pin.second->getLinkedComp()->getType() == "input") {
-    std::cout << pin.second->getState();
-  }
-  else { std::cout << "not an input"; }
-  std::cout << std::endl;
+void nts::AComponent::Dump() const {
+  static std::map<nts::Tristate, std::string> states = {
+    { nts::Tristate::UNDEFINED, "undefined" },
+    { nts::Tristate::FALSE, "false" },
+    { nts::Tristate::TRUE, "true" }
+  };
+
+  std::cout << "Component " << _name << ": type: " << this->getType() << std::endl;
+  std::for_each(_pins.begin(), _pins.end(),
+  [](const std::pair<int, nts::Pin *> &pair) {
+    std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << std::endl;
+  });
 }
 
-void nts::AComponent::Dump() const {
-  std::cout << _name << ": ";
-  std::for_each(_pins.begin(), _pins.end(), dumpName);
+static void computeInputPin(nts::Pin *pin) {
+  nts::IComponent *linkedComp = pin->getLinkedComp();
+  nts::Pin *linkedPin = pin->getLinkedPin();
+
+  if (pin->getComputed() == nts::Tristate::TRUE) { return; }
+  else if (linkedComp) { pin->setState(linkedComp->Compute(linkedPin->getID())); }
+}
+
+nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
+
+  // if pin is connected to an input-type (true, false, input, clock),
+  // or if it has already been computed, return its state
+  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPE)) ||
+      _pins[pin_num_this]->getComputed() == nts::Tristate::TRUE) {
+    _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
+    return _pins[pin_num_this]->getState();
+  }
+
+  _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
+  //  if pin is not linked, just return undefined state
+  if (!_pins[pin_num_this]->getLinkedPin()) {
+    return nts::Tristate::UNDEFINED;
+  }
+
+  nts::FlowChart *gate = _pins[pin_num_this]->getGate();
+  std::vector<nts::Pin *> inputs = gate->getInputs();
+  nts::Pin *output = gate->getOutput();
+
+  // if the computed pin is one of the gate's inputs, just compute its linked pin
+  if (_pins[pin_num_this] == inputs[0] || _pins[pin_num_this] == inputs[1]) {
+    computeInputPin(_pins[pin_num_this]);
+  } else {
+  // if the computed pin is the gate's output, compute both input then output
+    std::for_each(inputs.begin(), inputs.end(), computeInputPin);
+    output->setState(gate->Exec());
+  }
+  return _pins[pin_num_this]->getState();
 }
 
 nts::IComponent *nts::AComponent::create4001(const std::string &value) {
@@ -57,40 +114,10 @@ nts::IComponent *nts::AComponent::createInput(const std::string &value) {
   return reinterpret_cast<nts::IComponent *>(new nts::Input(value));
 }
 
-nts::IComponent *nts::AComponent::createComponent(const std::string &type, const std::string &value){
-  return _fn[type](value);
+nts::IComponent *nts::AComponent::createOutput(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::Output(value));
 }
 
-nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
-  // throw if invalid pin num
-  if (pin_num_this < 1 || pin_num_this > _pins.size()) {
-    throw nts::Exception::BaseException(std::cerr, ECOMPUTEINVALIDPIN);
-  }
-
-  // if pin is connected to an input-type (true, false, input, clock), return its state
-  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPE))) {
-    return _pins[pin_num_this]->getState();
-  }
-
-  nts::FlowChart *gate = _pins[pin_num_this]->getGate();
-  std::pair<nts::Pin *, nts::Pin *> inputs = gate->getInputs();
-  nts::Pin *output = gate->getOutput();
-  nts::Pin *linked = _pins[pin_num_this]->getLinkedPin();
-
-  //  if pin is not linked, just return undefined state
-  /* TODO output component or it'll always return undefined */
-  if (!linked) {
-    return nts::Tristate::UNDEFINED;
-  }
-
-  // if the computed pin is one of the gate's inputs, just compute its linked pin
-  if (_pins[pin_num_this] == inputs.first || _pins[pin_num_this] == inputs.second) {
-    _pins[pin_num_this]->setState(linked->getOwner()->Compute(linked->getID()));
-  } else {
-  // if the computed pin is the gate's output, compute both input then output
-    (inputs.first)->setState((inputs.first)->getLinkedComp()->Compute((inputs.first)->getLinkedPin()->getID()));
-    (inputs.second)->setState((inputs.second)->getLinkedComp()->Compute((inputs.second)->getLinkedPin()->getID()));
-    output->setState(gate->Exec());
-  }
-  return _pins[pin_num_this]->getState();
+nts::IComponent *nts::AComponent::createComponent(const std::string &type, const std::string &value){
+  return _fn[type](value);
 }

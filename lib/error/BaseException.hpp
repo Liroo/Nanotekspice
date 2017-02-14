@@ -29,9 +29,9 @@ namespace nts {
         const char *what() const throw();
         std::ostream& getOs() const;
     };
-    class PARSERException : public BaseException {
+    class ParserException : public BaseException {
       public:
-        PARSERException(std::ostream &os, const std::string &msg)
+        ParserException(std::ostream &os, const std::string &msg)
           : BaseException(os, msg) {};
     };
   }

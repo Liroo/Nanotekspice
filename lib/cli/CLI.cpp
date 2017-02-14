@@ -69,18 +69,18 @@ void nts::CLI::startCLI() {
   // feed parser should be handle in main or cstr and
   // we shall call simulate before startCLI in main
 
-  // std::istringstream input(_config.fileInput);
-  // std::string line;
-  // nts::Parser parser;
-  // nts::t_ast_node *root;
-  //
-  // while (std::getline(input, line)) {
-  //   parser.feed(line + "\n");
-  // }
-  // root = parser.createTree();
-  // // should check if every input/clock has a value
-  // parser.parseTree(*root);
-  // parser.setInputValues(_config.inputValue);
+   std::istringstream input(_config.fileInput);
+   std::string line;
+   nts::Parser parser;
+   nts::t_ast_node *root;
+
+   while (std::getline(input, line)) {
+     parser.feed(line + "\n");
+   }
+   root = parser.createTree();
+   // should check if every input/clock has a value
+   parser.parseTree(*root);
+   parser.setInputValues(_config.inputValue);
 
   // loop reading command
   while (_readCmd()) {}

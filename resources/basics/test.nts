@@ -8,6 +8,9 @@ input fifth
 4001 titi
 4001 toto
 
+output out
+
 .links:
 first:1 toto:1
 second:1 toto:2
+out:1 toto:3

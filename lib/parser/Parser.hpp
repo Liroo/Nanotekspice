@@ -17,8 +17,6 @@
 # define REG_LINKS "^(\\w+:\\d+)\\s+(\\w+:\\d+)$"
 # define REG_LINK "^(\\w+):(\\d+)$"
 
-typedef std::map<std::string, std::map<std::string, nts::IComponent *>> compsMap_t;
-
 namespace nts {
   class Parser {
     private:
@@ -51,12 +49,8 @@ namespace nts {
       void addChipset(const std::string &);
       void addLink(const std::string &);
 
-    private:
-      bool isSection(const std::string&);
-      std::pair<std::string,
-                std::string> getChipset(const std::string&);
-      std::pair<std::string,
-                std::string> getLink(const std::string&);
+    public:
+      std::map<std::string, nts::IComponent *> &getCompsMap();
   };
 };
 

@@ -12,7 +12,6 @@ namespace nts {
 typedef std::function<nts::IComponent *(const std::string &)> createFn_t;
 
 # define REG_INPUTTYPE "^(?:input|clock|true|false)$"
-# define ECOMPUTEINVALIDPIN "Invalid pin number, check the description of yours components"
 
 class nts::AComponent : public nts::IComponent {
   public:
@@ -33,11 +32,14 @@ class nts::AComponent : public nts::IComponent {
 
   protected:
     void initPins(const int &, const Tristate &state = Tristate::UNDEFINED);
+  public:
+    void resetPins() const;
 
   public:
     static IComponent *createComponent(const std::string &type, const std::string &value);
     static IComponent *create4001(const std::string &value);
     static IComponent *createInput(const std::string &value);
+    static IComponent *createOutput(const std::string &value);
     static std::map<std::string, createFn_t> _fn;
 
   protected:
@@ -47,7 +49,8 @@ class nts::AComponent : public nts::IComponent {
     std::map<int, nts::Pin *> _pins;
 };
 
-# include "comp4001.hpp"
+# include "Comp4001.hpp"
 # include "Input.hpp"
+# include "Output.hpp"
 
 #endif /* ACOMPONENT_HPP */
