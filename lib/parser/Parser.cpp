@@ -39,7 +39,7 @@ bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::s
     else if (matched[1] == "chipsets") { currentSection = nts::ASTSectionType::CHIPSET; }
     else {
       currentSection = nts::ASTSectionType::UNDEFINED;
-      //throw;
+      throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSINVALIDSECTION);
     }
     return true;
   }
@@ -47,25 +47,34 @@ bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::s
 }
 
 void nts::Parser::checkWrongSection(const std::string &line, const nts::ASTSectionType &currentSection) const {
-  (void)line;
-  (void)currentSection;
-  // to do, throw if needed
+  if ((currentSection == nts::ASTSectionType::CHIPSET &&
+      !std::regex_match(line, std::regex(REG_CHIPSET)) && !std::regex_match(line, std::regex(REG_SPECHIPSET))) ||
+      ((currentSection == nts::ASTSectionType::LINK && !std::regex_match(line, std::regex(REG_LINKS))))) {
+    throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX);
+  }
 }
 
 void nts::Parser::addChipset(const std::string &line) {
-  std::regex regSpeChipset(REG_SPECHIPSET);
-  std::regex regChipset(REG_CHIPSET);
   std::string lexem;
+  std::smatch matched;
 
-  if (std::regex_match(line, regSpeChipset)) {
-    lexem = REG_SPECHIPSET;
-  } else if (regex_match(line, regChipset)) {
-    lexem = REG_CHIPSET;
-  } else {
-    std::cout << "bad format chipset line: " << line << std::endl;
-    // throw
-    return;
-  }
+  // check availables types
+
+  if (std::regex_match(line, std::regex(REG_SPECHIPSET))) { lexem = REG_SPECHIPSET; }
+  else if (std::regex_match(line, std::regex(REG_CHIPSET))) { lexem = REG_CHIPSET; }
+  else { throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX); }
+  std::regex_search(line, matched, std::regex(lexem));
+
+  // check if this chipset's name already exists
+  if (std::find_if((*_ast->children)[0]->children->begin(), (*_ast->children)[0]->children->end(),
+      [&matched](const nts::t_ast_node *comp)->bool {
+        std::smatch matchedComp;
+
+        std::regex_search(comp->value, matchedComp, std::regex(comp->lexeme));
+        return matchedComp[2].str() == matched[2].str();
+      }) != (*_ast->children)[0]->children->end()) {
+        throw nts::Exception::PARSERException(std::cerr, matched[2].str() + ": " + EPARSARGEXISTS);
+      }
   (*_ast->children)[0]->children->push_back(this->createNode(lexem, nts::ASTNodeType::COMPONENT, line));
 }
 
@@ -73,7 +82,7 @@ void nts::Parser::addLink(const std::string &line) {
   std::smatch matched;
   std::regex regLinks(REG_LINKS);
 
-  // throw if bad syntax
+  if (!std::regex_match(line, regLinks)) { throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX); }
   std::regex_search(line, matched, regLinks);
   (*_ast->children)[1]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK, matched[1]));
   (*_ast->children)[2]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK_END, matched[2]));
@@ -88,46 +97,64 @@ nts::t_ast_node* nts::Parser::createTree() {
   std::regex regEmpty(REG_EMPTY);
 
   this->initTree();
-  // loop file to store each line in `line` var and analyse it
-  std::cout << "------ create tree --------" << std::endl;
+  //  loop file to store each line in `line` var and analyse it
   while (std::getline(input, line)) {
-    std::cout << line << std::endl;
+    //  check if section is valid (chipsets or links)
     if (!this->checkSection(currentSection, line) &&
+        // ignore comments and empty lines
         !std::regex_match(line, regCom) && !std::regex_match(line, regEmpty)) {
+          //  check if line is bad formated according to section
         this->checkWrongSection(line, currentSection);
+        //  add chipset / link to the associated list
         if (currentSection == nts::ASTSectionType::CHIPSET) { this->addChipset(line); }
         else { this->addLink(line); }
       }
     }
+    //  check if there are components and links
+    if ((*_ast->children)[0]->children->size() == 0) { throw nts::Exception::PARSERException(std::cerr, EPARSMISSINGCHIPSETS); }
+    else if ((*_ast->children)[1]->children->size() == 0) { throw nts::Exception::PARSERException(std::cerr, EPARSMISSINGLINKS); }
+
   return _ast;
 }
 
 void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::string>> &inputValues) {
+
+  //  loop for every inputeValue, check if it's a real input variable and set its value
   std::for_each(inputValues.begin(), inputValues.end(),
   [this](const std::pair<std::string, std::string> &inputValue) {
     std::map<std::string, nts::IComponent *>::iterator it = _comps.find(inputValue.first);
     int value;
 
     if (it != _comps.end()) {
-      // check type input
+      //  check if variable initialized in args is an input
+      if ((*it).second->getType() != "input" && (*it).second->getType() == "clock") {
+        throw nts::Exception::PARSERException(std::cerr, (*it).second->getType() + " " + inputValue.first + ": " + EPARSARGBADTYPE);
+      }
       std::stringstream(inputValue.second) >> value;
       _comps[inputValue.first]->getPins()[1]->setState((nts::Tristate)value);
     }
     else {
-      std::cout << "not found: " << inputValue.first << std::endl;
-      // throw ?
+      //  variable initialized but not defined in the config file
+      throw nts::Exception::PARSERException(std::cerr, inputValue.first + ": " + EPARSARGNOTFOUND);
     }
   });
 
+  //  check if an input variable is not initialized
+  std::map<std::string, nts::IComponent *>::iterator itPair;
 
-
-
-
+  if ((itPair = std::find_if(_comps.begin(), _comps.end(),
+      [this](const std::pair<std::string, nts::IComponent *> &pair)->bool {
+        return ((pair.second)->getType() == "input" || (pair.second)->getType() == "clock") &&
+                (pair.second->getPins()[1])->getState() == nts::Tristate::UNDEFINED;
+      })) != _comps.end()) {
+      throw nts::Exception::PARSERException(std::cerr, (*itPair).first + ": " + EPARSARGNOTSET);
+    }
 
 
   //std::cout << "compute first return " << _comps["first"]->Compute(1) << std::endl;
   //std::cout << "compute toto first pin return " << _comps["toto"]->Compute(1) << std::endl;
   std::cout << "compute toto third pin return " << _comps["toto"]->Compute(3) << std::endl;
+  std::cout << "compute toto third pin return " << _comps["toto"]->Compute(4) << std::endl;
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {
@@ -141,7 +168,6 @@ void nts::Parser::parseTree(t_ast_node& root) {
     std::regex_search(nodeComp->value, matched, regComp);
     newNode = nts::AComponent::createComponent(matched[1].str(), matched[2].str());
     _comps.insert(std::make_pair(matched[2].str(), newNode));
-    //_comps[matched[1].str()].insert(std::make_pair(matched[2].str(), newNode));
   });
 
   // links the component's pins using the IComponent's method SetLink
@@ -162,4 +188,6 @@ void nts::Parser::parseTree(t_ast_node& root) {
     _comps[matched[1].str()]->SetLink(firstPin, *_comps[matchedSecond[1].str()], secondPin);
     i++;
   }
+
+  // TODO Check if every links needed is here
 }

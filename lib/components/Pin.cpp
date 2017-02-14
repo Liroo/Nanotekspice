@@ -7,6 +7,7 @@ nts::Pin::Pin(const nts::IComponent *owner ,const int &id, const nts::Tristate &
   _linkedComp = const_cast<IComponent *>(comp);
   _state = state;
   _linkedPin = NULL;
+  // TODO ignored pins ? VDD VSS
 }
 
 void nts::Pin::setComp(const IComponent *newComp, const int &pin) {

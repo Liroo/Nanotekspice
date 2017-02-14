@@ -12,7 +12,6 @@
 # define REG_SECTION "^.((?:links|chipsets)):$"
 # define REG_COM "^#.*$"
 # define REG_EMPTY "^$"
-//# define REG_CHIPSET "^(\\w+)\\s+(\\w+)(?:(?:\\((\\w*)\\))|())$"
 # define REG_SPECHIPSET "^(2716)\\s+(\\w+\\(\\w+\\))$"
 # define REG_CHIPSET "^(\\w+)\\s+(\\w+)$"
 # define REG_LINKS "^(\\w+:\\d+)\\s+(\\w+:\\d+)$"

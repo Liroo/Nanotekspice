@@ -3,6 +3,7 @@
 
 # include <string>
 # include <vector>
+# include "BaseException.hpp"
 
 namespace nts {
   enum class ASTNodeType: int {

@@ -7,14 +7,16 @@ namespace nts {
 
 # include <functional>
 # include "IComponent.hpp"
+# include "BaseException.hpp"
 
 typedef std::function<nts::IComponent *(const std::string &)> createFn_t;
 
 # define REG_INPUTTYPE "^(?:input|clock|true|false)$"
+# define ECOMPUTEINVALIDPIN "Invalid pin number, check the description of yours components"
 
 class nts::AComponent : public nts::IComponent {
   public:
-    AComponent(const std::string &, const nts::Tristate &state = nts::Tristate::UNDEFINED);
+    AComponent(const std::string &);
     virtual ~AComponent() {};
 
   public:
@@ -28,7 +30,6 @@ class nts::AComponent : public nts::IComponent {
     virtual std::string getName() const;
     virtual std::string getType() const;
     virtual std::map<int, nts::Pin *> getPins() const;
-    virtual void setValue(const nts::Tristate &);
 
   protected:
     void initPins(const int &, const Tristate &state = Tristate::UNDEFINED);
@@ -42,7 +43,6 @@ class nts::AComponent : public nts::IComponent {
   protected:
     std::string _name;
     std::string _type;
-    nts::Tristate _value;
     std::vector<nts::FlowChart *> _gates;
     std::map<int, nts::Pin *> _pins;
 };
