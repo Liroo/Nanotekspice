@@ -16,6 +16,7 @@
 # define REG_CHIPSET "^(\\w+)\\s+(\\w+)$"
 # define REG_LINKS "^(\\w+:\\d+)\\s+(\\w+:\\d+)$"
 # define REG_LINK "^(\\w+):(\\d+)$"
+# define REG_AVAILABLETYPE "input|output|4001"
 
 namespace nts {
   class Parser {
@@ -23,6 +24,7 @@ namespace nts {
       std::string _input;
       nts::t_ast_node* _ast;
       std::map<std::string, nts::IComponent *> _comps;
+      bool _dirty;
 
     public:
       Parser();
@@ -50,7 +52,9 @@ namespace nts {
       void addLink(const std::string &);
 
     public:
-      std::map<std::string, nts::IComponent *> getCompsMap() const;
+      std::map<std::string, nts::IComponent *> getComponentsMap() const;
+      void setDirty(const bool &);
+      bool isDirty() const;
   };
 };
 

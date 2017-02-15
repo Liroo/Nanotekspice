@@ -11,6 +11,9 @@
 # define EPARSARGNOTSET "input variable not initialized"
 # define EPARSMISSINGCHIPSETS "Missing chipsets section or chipset variable"
 # define EPARSMISSINGLINKS "Missing links section or link"
+# define EPARSINVALIDLINK "This component can not be linked because it has not been defined : "
+# define EPARSOUTPUTNOTLINKED ": this output has not been linked to any chipset"
+# define EPARSINVALIDTYPE ": this type is not available"
 
 namespace nts {
   namespace Exception {

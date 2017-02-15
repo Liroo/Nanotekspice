@@ -85,7 +85,7 @@ void nts::CLI::startCLI() {
    root = _parser.createTree();
    // should check if every input/clock has a value
    _parser.parseTree(*root);
-   _comps = _parser.getCompsMap();
+   _comps = _parser.getComponentsMap();
    this->simulate();
 
   // loop reading command
@@ -176,6 +176,7 @@ bool nts::CLI::display() const {
 }
 
 bool nts::CLI::simulate() {
+  if (!_parser.isDirty()) { return false; }
   std::cout << "simulate" << std::endl;
 
   _parser.setInputValues(_config.inputValue);
@@ -197,6 +198,7 @@ bool nts::CLI::simulate() {
     });
   });
 
+  _parser.setDirty(false);
   return true;
 }
 
@@ -245,4 +247,5 @@ void nts::CLI::_extractInputValue(const std::string &arg) {
   } else { // if not, create a new one
     _config.inputValue.push_back(std::pair<std::string, std::string>(matched[1], matched[2]));
   }
+  _parser.setDirty(true);
 }

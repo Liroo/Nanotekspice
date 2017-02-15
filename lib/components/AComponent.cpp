@@ -52,7 +52,12 @@ void nts::AComponent::SetLink(size_t pin_num_this,
   // check logical links error, throw if needed TODO
   // maybe lexem in Pin class to check which types can be linked ?
 
-  // links first component's pin to second's pin, and second way
+  // invalid pin
+  // variable output on pin input
+  // variable input on pin output
+  // pin input - pin input || pin output - pin output
+
+  // links first component's pin to second one's pin, and second way
   _pins[pin_num_this]->setComp(&component, pin_num_target);
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
 }
@@ -65,6 +70,7 @@ void nts::AComponent::Dump() const {
   };
 
   std::cout << "[" << this->getType() << "\t" << _name << "]:" << std::endl;
+
   std::for_each(_pins.begin(), _pins.end(),
   [](const std::pair<int, nts::Pin *> &pair) {
     std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << std::endl;

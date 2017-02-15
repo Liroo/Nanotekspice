@@ -3,6 +3,7 @@
 nts::Parser::Parser() {
   _input = "";
   _ast = NULL;
+  _dirty = true;
 }
 
 nts::Parser::~Parser() {}
@@ -58,11 +59,16 @@ void nts::Parser::addChipset(const std::string &line) {
   std::string lexem;
   std::smatch matched;
 
-  // check availables types
+
   if (std::regex_match(line, std::regex(REG_SPECHIPSET))) { lexem = REG_SPECHIPSET; }
   else if (std::regex_match(line, std::regex(REG_CHIPSET))) { lexem = REG_CHIPSET; }
   else { throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSBADSYNTAX); }
   std::regex_search(line, matched, std::regex(lexem));
+
+  //  check if type is available
+  if (!std::regex_match(matched[1].str(), std::regex(REG_AVAILABLETYPE))) {
+    throw nts::Exception::ParserException(std::cerr, matched[1].str() + EPARSINVALIDTYPE);
+  }
 
   // check if this chipset's name already exists
   if (std::find_if((*_ast->children)[0]->children->begin(), (*_ast->children)[0]->children->end(),
@@ -178,14 +184,42 @@ void nts::Parser::parseTree(t_ast_node& root) {
     std::stringstream(matchedSecond[2].str()) >> secondPin;
     std::cout << "set link between " << matched[1].str() << ": " << firstPin << " ";
     std::cout << "and " << matchedSecond[1].str() << ": " << secondPin << std::endl;
-    //TODO check if chipsets to link exists
+    //  check if chipsets to link are defined
+    if ((std::find_if(_comps.begin(), _comps.end(),
+        [&matched](const std::pair<std::string, nts::IComponent*> &pair){
+          return (pair.second)->getName() == matched[1].str();
+        })) == _comps.end()) {
+          throw nts::Exception::ParserException(std::cerr, EPARSINVALIDLINK + matched[1].str());
+        }
+    if ((std::find_if(_comps.begin(), _comps.end(),
+        [&matchedSecond](const std::pair<std::string, nts::IComponent*> &pair){
+          return (pair.second)->getName() == matchedSecond[1].str();
+        })) == _comps.end()) {
+          throw nts::Exception::ParserException(std::cerr, EPARSINVALIDLINK + matchedSecond[1].str());
+        }
+    //  links chipsets
     _comps[matched[1].str()]->SetLink(firstPin, *_comps[matchedSecond[1].str()], secondPin);
     i++;
   }
 
-  // TODO Check if every link needed is here
+  //  check if every output is linked
+  std::for_each(_comps.begin(), _comps.end(),
+  [](const std::pair<std::string, nts::IComponent*> &pair) {
+    if ((pair.second)->getType() == "output" && !((pair.second)->getPins()[1]->getLinkedComp())) {
+      throw nts::Exception::ParserException(std::cerr, (pair.second)->getName() + EPARSOUTPUTNOTLINKED);
+    }
+  });
+
 }
 
-std::map<std::string, nts::IComponent *> nts::Parser::getCompsMap() const {
+std::map<std::string, nts::IComponent *> nts::Parser::getComponentsMap() const {
   return _comps;
+}
+
+void nts::Parser::setDirty(const bool &dirty) {
+  _dirty = dirty;
+}
+
+bool nts::Parser::isDirty() const {
+  return _dirty == true;
 }
