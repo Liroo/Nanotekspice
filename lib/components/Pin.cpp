@@ -12,7 +12,6 @@ nts::Pin::Pin(const nts::IComponent *owner,
   _state = state;
   _linkedPin = NULL;
   _computed = computed;
-  // TODO ignored pins ? VDD VSS
 }
 
 void nts::Pin::setComp(const IComponent *newComp, const int &pin) {
@@ -66,7 +65,12 @@ std::map<nts::GateType, gateFn_t> nts::FlowChart::_gateFn = {
   { nts::GateType::NAND, &nts::FlowChart::NAND },
   { nts::GateType::AND, &nts::FlowChart::AND },
   { nts::GateType::OR, &nts::FlowChart::OR },
-  { nts::GateType::XOR, &nts::FlowChart::XOR }
+  { nts::GateType::XOR, &nts::FlowChart::XOR },
+  { nts::GateType::FOURBITSADDER, &nts::FlowChart::fourBitsAdder }
+ };
+
+ std::map<std::string, std::string> nts::FlowChart::tables = {
+   { "NOR", "" }
  };
 
 nts::FlowChart::FlowChart(const std::pair<nts::Pin *, nts::Pin *> &inputs,
@@ -75,10 +79,10 @@ nts::FlowChart::FlowChart(const std::pair<nts::Pin *, nts::Pin *> &inputs,
   _inputs.push_back(inputs.first);
   _inputs.push_back(inputs.second);
   _output = const_cast<nts::Pin *>(&output);
-  _type = type;
   _inputs[0]->setGate(this);
   _inputs[1]->setGate(this);
   _output->setGate(this);
+  _type = type;
 }
 
 std::vector<nts::Pin *> nts::FlowChart::getInputs() const {
@@ -93,51 +97,59 @@ nts::GateType nts::FlowChart::getType() const {
   return _type;
 }
 
+bool nts::FlowChart::hasDefinedPins() const {
+  return (std::find_if(_inputs.begin(), _inputs.end(),
+          [](const nts::Pin *pin) {
+            return pin->getState() == nts::Tristate::UNDEFINED;
+          })) == _inputs.end();
+}
+
 nts::Tristate nts::FlowChart::NOR(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> inputs = gate->getInputs();
-  if (inputs[0]->getState() == nts::Tristate::UNDEFINED ||
-      inputs[1]->getState() == nts::Tristate::UNDEFINED) {
-        return nts::Tristate::UNDEFINED;
-      }
+
+    if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
   return (nts::Tristate)(inputs[0]->getState() != nts::Tristate::TRUE || inputs[1]->getState() != nts::Tristate::TRUE);
 }
 
 nts::Tristate nts::FlowChart::NAND(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> inputs = gate->getInputs();
-  if (inputs[0]->getState() == nts::Tristate::UNDEFINED ||
-      inputs[1]->getState() == nts::Tristate::UNDEFINED) {
-        return nts::Tristate::UNDEFINED;
-      }
+
+  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
   return (nts::Tristate)(inputs[0]->getState() != nts::Tristate::TRUE && inputs[1]->getState() != nts::Tristate::TRUE);
 }
 
 nts::Tristate nts::FlowChart::AND(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> inputs = gate->getInputs();
-  if (inputs[0]->getState() == nts::Tristate::UNDEFINED ||
-      inputs[1]->getState() == nts::Tristate::UNDEFINED) {
-        return nts::Tristate::UNDEFINED;
-      }
+
+  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
   return (nts::Tristate)(inputs[0]->getState() == nts::Tristate::TRUE && inputs[1]->getState() == nts::Tristate::TRUE);
 }
 
 nts::Tristate nts::FlowChart::OR(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> inputs = gate->getInputs();
-  if (inputs[0]->getState() == nts::Tristate::UNDEFINED ||
-      inputs[1]->getState() == nts::Tristate::UNDEFINED) {
-        return nts::Tristate::UNDEFINED;
-      }
+
+  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
   return (nts::Tristate)(inputs[0]->getState() == nts::Tristate::TRUE || inputs[1]->getState() == nts::Tristate::TRUE);
 }
 
-
 nts::Tristate nts::FlowChart::XOR(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> inputs = gate->getInputs();
-  if (inputs[0]->getState() == nts::Tristate::UNDEFINED ||
-      inputs[1]->getState() == nts::Tristate::UNDEFINED) {
-        return nts::Tristate::UNDEFINED;
-      }
+
+  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
   return (nts::Tristate)((inputs[0]->getState() == nts::Tristate::TRUE && inputs[1]->getState() != nts::Tristate::TRUE) ||
                           (inputs[0]->getState() != nts::Tristate::TRUE && inputs[1]->getState() == nts::Tristate::TRUE));
+}
+
+nts::Tristate nts::FlowChart::fourBitsAdder(const nts::FlowChart *gate) {
+  std::vector<nts::Pin *> inputs = gate->getInputs();
+  int out = 0;
+
+  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
+  std::for_each(inputs.begin(), inputs.end(),
+  [&out](const nts::Pin *pin) {
+    out += (int)pin->getState();
+  });
+  return nts::Tristate(out == 4 || out == 1);
 }
 
 nts::Tristate nts::FlowChart::Exec() const {

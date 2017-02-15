@@ -51,6 +51,9 @@ class nts::AComponent : public nts::IComponent {
 };
 
 # include "Comp4001.hpp"
+# include "Comp4011.hpp"
+# include "Comp4030.hpp"
+# include "Comp4071.hpp"
 # include "Input.hpp"
 # include "Output.hpp"
 

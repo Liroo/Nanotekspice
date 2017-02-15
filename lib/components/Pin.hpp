@@ -14,7 +14,8 @@ namespace nts {
     NAND,
     OR,
     AND,
-    XOR
+    XOR,
+    FOURBITSADDER
   };
   class Pin;
   class FlowChart;
@@ -54,6 +55,7 @@ class nts::Pin {
 
 typedef std::function<nts::Tristate(const nts::FlowChart *)> gateFn_t;
 
+
 class nts::FlowChart {
   public:
     FlowChart(const std::pair<Pin *, Pin *> &inputs, const Pin &output, const nts::GateType &type);
@@ -61,12 +63,15 @@ class nts::FlowChart {
 
   public:
     nts::Tristate Exec() const;
+    bool hasDefinedPins() const;
     static nts::Tristate NOR(const nts::FlowChart *);
     static nts::Tristate OR(const nts::FlowChart *);
     static nts::Tristate AND(const nts::FlowChart *);
     static nts::Tristate NAND(const nts::FlowChart *);
     static nts::Tristate XOR(const nts::FlowChart *);
+    static nts::Tristate fourBitsAdder(const nts::FlowChart *);
     static std::map<GateType, gateFn_t> _gateFn;
+    static std::map<std::string, std::string> tables;
 
   public:
     nts::Pin *getOutput() const;
@@ -77,6 +82,11 @@ class nts::FlowChart {
     std::vector<Pin *> _inputs;
     Pin *_output;
     GateType _type;
+    struct _config {
+      std::regex lexem;
+      nts::Tristate value;;
+    };
+    std::vector<_config> _table;
 };
 
 #endif /* PIN_HPP */
