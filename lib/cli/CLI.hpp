@@ -47,7 +47,7 @@ namespace nts {
 
     public:
       // startCLI will run CLI, waiting for user input and reading cmd
-      void startCLI();
+      int startCLI();
 
     /* Public member function that is not really public ;) */
     public:
@@ -111,14 +111,16 @@ namespace nts {
         std::vector<std::pair<std::string, std::string> > inputValue;
       };
       config _config;
+
     private:
       nts::Parser _parser;
       std::map<std::string, nts::IComponent *> _comps;
 
-    public: // COMMANDS REFERENCE
-      class Dump;
-      class Display;
-      class Simulate;
+      // Smart optimization which avoid to simulate many times the same tree
+      bool _dirty;
+      void _setDirty(const bool &);
+      bool _isDirty() const;
+
   };
 }; // namespace nts
 

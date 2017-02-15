@@ -24,7 +24,6 @@ namespace nts {
       std::string _input;
       nts::t_ast_node* _ast;
       std::map<std::string, nts::IComponent *> _comps;
-      bool _dirty;
 
     public:
       Parser();
@@ -53,8 +52,7 @@ namespace nts {
 
     public:
       std::map<std::string, nts::IComponent *> getComponentsMap() const;
-      void setDirty(const bool &);
-      bool isDirty() const;
+
   };
 };
 

@@ -59,6 +59,8 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     { "loop", [this]() -> bool { return this->loop(); } },
     { "dump", [this]() -> bool { return this->dump(); } }
   };
+  // Init dirty optimization
+  _dirty = true;
 } catch (const nts::Exception::CLIException& e) {
   // get output stream and print error
   e.getOs() << e.what() << std::endl;
@@ -70,7 +72,7 @@ nts::CLI::~CLI() {
   // everything should be deleted automaticly :')
 }
 
-void nts::CLI::startCLI() {
+int nts::CLI::startCLI() {
   // WE SHALL MOVE SOME OF THIS LOGIC INTO SIMULATE,
   // feed parser should be handle in main or cstr and
   // we shall call simulate before startCLI in main
@@ -82,14 +84,21 @@ void nts::CLI::startCLI() {
    while (std::getline(input, line)) {
      _parser.feed(line + "\n");
    }
-   root = _parser.createTree();
-   // should check if every input/clock has a value
-   _parser.parseTree(*root);
+   try {
+     root = _parser.createTree();
+     // should check if every input/clock has a value
+     _parser.parseTree(*root);
+   } catch (nts::Exception::ParserException &e) {
+     // show the message then return
+     e.getOs() << e.what() << std::endl;
+     return 1;
+   }
    _comps = _parser.getComponentsMap();
-   this->simulate();
+   simulate();
 
   // loop reading command
   while (_readCmd()) {}
+  return 0;
 }
 
 bool nts::CLI::_readCmd() {
@@ -165,19 +174,29 @@ bool nts::CLI::help() {
 }
 
 bool nts::CLI::display() const {
+  // For each output, use the method dump
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp){
     if ((comp.second)->getType() == "output") {
       (comp.second)->Dump();
     }
   });
+  // Then ouput newline
   std::cout << std::endl;
   return true;
 }
 
+void nts::CLI::_setDirty(const bool &dirty) {
+  _dirty = dirty;
+}
+
+bool nts::CLI::_isDirty() const {
+  return _dirty == true;
+}
+
 bool nts::CLI::simulate() {
-  if (!_parser.isDirty()) { return false; }
-  std::cout << "simulate" << std::endl;
+  // TODO Doc
+  if (!_isDirty()) { return true; }
 
   _parser.setInputValues(_config.inputValue);
   std::for_each(_comps.begin(), _comps.end(),
@@ -198,7 +217,7 @@ bool nts::CLI::simulate() {
     });
   });
 
-  _parser.setDirty(false);
+  _setDirty(false);
   return true;
 }
 
@@ -210,10 +229,12 @@ bool nts::CLI::loop() {
 }
 
 bool nts::CLI::dump() const {
+  // for each component, call method dump
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp){
     (comp.second)->Dump();
   });
+  // Then output newline
   std::cout << std::endl;
   return true;
 }
@@ -247,5 +268,5 @@ void nts::CLI::_extractInputValue(const std::string &arg) {
   } else { // if not, create a new one
     _config.inputValue.push_back(std::pair<std::string, std::string>(matched[1], matched[2]));
   }
-  _parser.setDirty(true);
+  _setDirty(true);
 }

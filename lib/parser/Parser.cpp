@@ -1,14 +1,15 @@
 #include "Parser.hpp"
 
 nts::Parser::Parser() {
+  // init parser
   _input = "";
   _ast = NULL;
-  _dirty = true;
 }
 
 nts::Parser::~Parser() {}
 
 void nts::Parser::feed(std::string const& input) {
+  // concat input variable from class with input from arg
   _input += input;
 }
 
@@ -214,12 +215,4 @@ void nts::Parser::parseTree(t_ast_node& root) {
 
 std::map<std::string, nts::IComponent *> nts::Parser::getComponentsMap() const {
   return _comps;
-}
-
-void nts::Parser::setDirty(const bool &dirty) {
-  _dirty = dirty;
-}
-
-bool nts::Parser::isDirty() const {
-  return _dirty == true;
 }
