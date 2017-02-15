@@ -24,12 +24,12 @@ OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 
 NAME_GEN = nanotekspice
 
-SRC_GENDIR = src/
-OBJ_GENDIR = $(OBJ_DIR)src/
+SRC_BINDIR = bin/
+OBJ_BINDIR = $(OBJ_DIR)bin/
 
-SRC_GEN = main.cpp
+SRC_BIN = main.cpp
 
-OBJ_GEN = $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
+OBJ_BIN = $(addprefix $(OBJ_BINDIR), $(SRC_BIN:.cpp=.o))
 
 # Utility
 
@@ -56,7 +56,7 @@ $(OBJ_LIBDIR)%.o: $(SRC_LIBDIR)%.cpp
 	@mkdir -p $(dir $@)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-$(OBJ_GENDIR)%.o: $(SRC_GENDIR)%.cpp
+$(OBJ_BINDIR)%.o: $(SRC_BINDIR)%.cpp
 	@mkdir -p $(dir $@)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
@@ -64,8 +64,8 @@ $(NAME_LIB): $(OBJ_LIB)
 	$(AR) $(NAME_LIB) $(OBJ_LIB)
 	$(RANLIB) $(NAME_LIB)
 
-$(NAME_GEN): $(NAME_LIB) $(OBJ_GEN)
-	$(CC) -o $(NAME_GEN) $(OBJ_GEN) -L. -lnanotekspice
+$(NAME_GEN): $(NAME_LIB) $(OBJ_BIN)
+	$(CC) -o $(NAME_GEN) $(OBJ_BIN) -L. -lnanotekspice
 
 clean:
 	$(RM) $(OBJ_DIR)
