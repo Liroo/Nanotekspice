@@ -1,16 +1,14 @@
 .chipsets:
-input first
-input second
-input third
-input fourth
-input fifth
+input a
+input ab
+input abc
+input abcd
 
-4001 titi
 4001 toto
 
 output out
 
 .links:
-first:1 toto:1
-second:1 toto:2
+a:1 toto:1
+ab:1 toto:2
 out:1 toto:3

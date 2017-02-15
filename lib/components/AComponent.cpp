@@ -21,6 +21,10 @@ std::map<int, nts::Pin *> nts::AComponent::getPins() const {
   return _pins;
 }
 
+std::vector<nts::FlowChart *> nts::AComponent::getGates() const {
+  return _gates;
+}
+
 std::string nts::AComponent::getName() const {
   return _name;
 }
@@ -60,7 +64,7 @@ void nts::AComponent::Dump() const {
     { nts::Tristate::TRUE, "true" }
   };
 
-  std::cout << "Component " << _name << ": type: " << this->getType() << std::endl;
+  std::cout << "[" << this->getType() << "\t" << _name << "]:" << std::endl;
   std::for_each(_pins.begin(), _pins.end(),
   [](const std::pair<int, nts::Pin *> &pair) {
     std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << std::endl;
@@ -100,8 +104,12 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
     computeInputPin(_pins[pin_num_this]);
   } else {
   // if the computed pin is the gate's output, compute both input then output
+    nts::Tristate res;
+
     std::for_each(inputs.begin(), inputs.end(), computeInputPin);
-    output->setState(gate->Exec());
+    res = gate->Exec();
+    output->setState(res);
+    (output->getLinkedComp()->getPins()[1])->setState(res);
   }
   return _pins[pin_num_this]->getState();
 }

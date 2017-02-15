@@ -29,6 +29,7 @@ class nts::AComponent : public nts::IComponent {
     virtual std::string getName() const;
     virtual std::string getType() const;
     virtual std::map<int, nts::Pin *> getPins() const;
+    virtual std::vector<nts::FlowChart *> getGates() const;
 
   protected:
     void initPins(const int &, const Tristate &state = Tristate::UNDEFINED);

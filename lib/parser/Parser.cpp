@@ -148,14 +148,6 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
       })) != _comps.end()) {
       throw nts::Exception::ParserException(std::cerr, (*itPair).first + ": " + EPARSARGNOTSET);
     }
-
-
-  //std::cout << "compute first return " << _comps["first"]->Compute(1) << std::endl;
-  //std::cout << "compute toto first pin return " << _comps["toto"]->Compute(1) << std::endl;
-  std::cout << "compute toto third pin return " << _comps["toto"]->Compute(3) << std::endl;
-  std::cout << "compute toto third pin return " << _comps["toto"]->Compute(4) << std::endl;
-
-  _comps["toto"]->Dump();
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {
@@ -194,6 +186,6 @@ void nts::Parser::parseTree(t_ast_node& root) {
   // TODO Check if every link needed is here
 }
 
-std::map<std::string, nts::IComponent *> &nts::Parser::getCompsMap() {
+std::map<std::string, nts::IComponent *> nts::Parser::getCompsMap() const {
   return _comps;
 }

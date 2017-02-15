@@ -111,6 +111,9 @@ namespace nts {
         std::vector<std::pair<std::string, std::string> > inputValue;
       };
       config _config;
+    private:
+      nts::Parser _parser;
+      std::map<std::string, nts::IComponent *> _comps;
 
     public: // COMMANDS REFERENCE
       class Dump;

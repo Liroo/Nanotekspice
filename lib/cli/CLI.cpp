@@ -71,16 +71,16 @@ void nts::CLI::startCLI() {
 
    std::istringstream input(_config.fileInput);
    std::string line;
-   nts::Parser parser;
    nts::t_ast_node *root;
 
    while (std::getline(input, line)) {
-     parser.feed(line + "\n");
+     _parser.feed(line + "\n");
    }
-   root = parser.createTree();
+   root = _parser.createTree();
    // should check if every input/clock has a value
-   parser.parseTree(*root);
-   parser.setInputValues(_config.inputValue);
+   _parser.parseTree(*root);
+   _comps = _parser.getCompsMap();
+   this->simulate();
 
   // loop reading command
   while (_readCmd()) {}
@@ -159,13 +159,37 @@ bool nts::CLI::help() {
 }
 
 bool nts::CLI::display() const {
-  nts::CLI::Display display;
-
+  std::for_each(_comps.begin(), _comps.end(),
+  [](const std::pair<std::string, nts::IComponent *> &comp){
+    if ((comp.second)->getType() == "output") {
+      (comp.second)->Dump();
+    }
+  });
+  std::cout << std::endl;
   return true;
 }
 
 bool nts::CLI::simulate() {
-  nts::CLI::Simulate simulate;
+  std::cout << "simulate" << std::endl;
+
+  _parser.setInputValues(_config.inputValue);
+  std::for_each(_comps.begin(), _comps.end(),
+  [](const std::pair<std::string, nts::IComponent *> &comp) {
+    std::cout << "Simulate on comp " << (comp.second)->getName() << std::endl;
+
+    std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
+
+    std::for_each(gates.begin(), gates.end(),
+    [](const nts::FlowChart *gate) {
+      nts::Pin *outPin = gate->getOutput();
+      nts::IComponent *owner = outPin->getOwner();
+
+      if (owner) {
+        std::cout << "compute pin id " << outPin->getID() << std::endl;
+        owner->Compute(outPin->getID());
+      }
+    });
+  });
 
   return true;
 }
@@ -178,8 +202,11 @@ bool nts::CLI::loop() {
 }
 
 bool nts::CLI::dump() const {
-  nts::CLI::Dump dump;
-
+  std::for_each(_comps.begin(), _comps.end(),
+  [](const std::pair<std::string, nts::IComponent *> &comp){
+    (comp.second)->Dump();
+  });
+  std::cout << std::endl;
   return true;
 }
 

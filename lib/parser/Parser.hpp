@@ -50,7 +50,7 @@ namespace nts {
       void addLink(const std::string &);
 
     public:
-      std::map<std::string, nts::IComponent *> &getCompsMap();
+      std::map<std::string, nts::IComponent *> getCompsMap() const;
   };
 };
 
