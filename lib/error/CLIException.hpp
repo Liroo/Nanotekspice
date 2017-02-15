@@ -4,7 +4,7 @@
 # include "BaseException.hpp"
 
 # define ECLIUSAGE "Usage: nanotekspice file [input=value, ...]"
-# define ECLIACCESS "no such file or directory"
+# define ECLIACCESS "no such regular file"
 # define ECLIBADSYNTAX "bad syntax"
 
 namespace nts {

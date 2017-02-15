@@ -1,8 +1,6 @@
-#include "CLI.hpp"
+#include <sys/stat.h>
 
-#include "Simulate.hpp"
-#include "Display.hpp"
-#include "Dump.hpp"
+#include "CLI.hpp"
 
 /*
   Init CLI by:
@@ -20,8 +18,16 @@ nts::CLI::CLI(int argc, char *argv[]) try {
   fileInput.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   std::ostringstream out;
   try {
+    // Check if this file is a regular file and not a directory
+    struct stat buf;
+    // if stat fail or file is not a regular file, throw error
+    if (stat(argv[1], &buf) != 0 || !S_ISREG(buf.st_mode)) {
+      throw std::ifstream::failure(ECLIACCESS);
+    }
+
     // open file and throw exception if there is an error
     fileInput.open(argv[1], std::ifstream::in);
+
     // extract content of file in tmp var
     out << fileInput.rdbuf();
     // convert file content in _config.fileInput
