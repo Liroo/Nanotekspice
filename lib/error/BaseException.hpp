@@ -5,15 +5,6 @@
 # include <iostream>
 # include <string>
 
-# define EPARSINVALIDSECTION "invalid section"
-# define EPARSBADSYNTAX "bad syntax"
-# define EPARSARGBADTYPE "invalid type: should be input or clock"
-# define EPARSARGNOTFOUND "variable not found"
-# define EPARSARGEXISTS "variable already exists"
-# define EPARSARGNOTSET "input variable not initialized"
-# define EPARSMISSINGCHIPSETS "Missing chipsets section or chipset variable"
-# define EPARSMISSINGLINKS "Missing links section or link"
-
 namespace nts {
   namespace Exception {
     class BaseException: public std::exception {
