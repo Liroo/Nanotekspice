@@ -14,7 +14,7 @@ namespace nts {
         CLIException(std::ostream &os, const std::string &msg)
           : BaseException(os, msg) {};
     };
-  }
+  };
 };
 
 #endif
