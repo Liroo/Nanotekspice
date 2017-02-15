@@ -59,7 +59,6 @@ void nts::Parser::addChipset(const std::string &line) {
   std::smatch matched;
 
   // check availables types
-
   if (std::regex_match(line, std::regex(REG_SPECHIPSET))) { lexem = REG_SPECHIPSET; }
   else if (std::regex_match(line, std::regex(REG_CHIPSET))) { lexem = REG_CHIPSET; }
   else { throw nts::Exception::PARSERException(std::cerr, line + ": " + EPARSBADSYNTAX); }
@@ -155,6 +154,8 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
   //std::cout << "compute toto first pin return " << _comps["toto"]->Compute(1) << std::endl;
   std::cout << "compute toto third pin return " << _comps["toto"]->Compute(3) << std::endl;
   std::cout << "compute toto third pin return " << _comps["toto"]->Compute(4) << std::endl;
+
+  _comps["toto"]->Dump();
 }
 
 void nts::Parser::parseTree(t_ast_node& root) {
@@ -185,9 +186,14 @@ void nts::Parser::parseTree(t_ast_node& root) {
     std::stringstream(matchedSecond[2].str()) >> secondPin;
     std::cout << "set link between " << matched[1].str() << ": " << firstPin << " ";
     std::cout << "and " << matchedSecond[1].str() << ": " << secondPin << std::endl;
+    //TODO check if chipsets to link exists
     _comps[matched[1].str()]->SetLink(firstPin, *_comps[matchedSecond[1].str()], secondPin);
     i++;
   }
 
-  // TODO Check if every links needed is here
+  // TODO Check if every link needed is here
+}
+
+std::map<std::string, nts::IComponent *> &nts::Parser::getCompsMap() {
+  return _comps;
 }
