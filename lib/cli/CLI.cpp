@@ -2,6 +2,8 @@
 #include <regex>
 
 #include "CLI.hpp"
+#include "BasicMode.hpp"
+#include "NcursesMode.hpp"
 
 /*
   Init CLI by:
@@ -40,6 +42,7 @@ nts::CLI::CLI(int argc, char *argv[]) try {
 
   // forEach like where goal is to parse arguments
   // if there is one false argument (bad syntax), it throw an exception that exit software
+  _config.mode = NULL;
   for (int i = 2; argv[i]; i++) {
     // regex for options
     std::smatch matched;
@@ -51,12 +54,8 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     if (matched.size() == 3) {
       // handle mode option
       if (matched[1].compare("mode") == 0) {
-        if (matched[2].compare("basic") == 0) {
-          _config.mode = nts::CLI::CLIMode::BASIC;
-        } else if (matched[2].compare("ncurses") == 0) {
-          _config.mode = nts::CLI::CLIMode::NCURSES;
-        } else {
-          _config.mode = nts::CLI::CLIMode::BASIC;
+        if (matched[2].compare("ncurses") == 0) {
+          _config.mode = new nts::CLI::Mode::NcursesMode();
         }
       } else {
         throw nts::Exception::CLIException(std::cerr, std::string(argv[i]) + ": " + ECLIUNKNOWOPT);
@@ -84,6 +83,9 @@ nts::CLI::CLI(int argc, char *argv[]) try {
   };
   // Init dirty optimization
   _dirty = true;
+  if (!_config.mode) {
+    _config.mode = new nts::CLI::Mode::BasicMode();
+  }
 } catch (const nts::Exception::CLIException& e) {
   // get output stream and print error
   e.getOs() << e.what() << std::endl;
@@ -120,27 +122,12 @@ int nts::CLI::startCLI() {
    simulate();
 
   // loop reading command
-  while (_readCmd()) {}
+  while (_execCmd()) {}
   return 0;
 }
 
-bool nts::CLI::_readCmd() {
-  // Prompt
-  std::clog << CLI_PROMPT;
-  // get user input
-  // if user input is empty and EOF is reached, exit
-  std::string input;
-  if (!std::getline(std::cin, input) && input.empty()) {
-    std::cout << "exit" << std::endl;
-    input = "exit";
-  }
-
-  // Check if stdin stream is in error state or not
-  // it could be caused by an.. EOF (ctrl-D)...
-  // WELL TRIED RAPH, WELL TRIED !
-  if (!std::cin) {
-    std::cin.clear();
-  }
+bool nts::CLI::_execCmd() {
+  std::string input = _config.mode->readCmd();
 
   /*
     Check if input is an inputModifier.

@@ -97,8 +97,16 @@ namespace nts {
       */
       typedef std::function<bool()> _CLICommand;
       std::map<std::string, _CLICommand> _cmd;
-      bool _readCmd();
+      bool _execCmd();
 
+    public:
+      // definition of mode namespace like of mode of CLI
+      class Mode {
+        public:
+          class IMode;
+          class NcursesMode;
+          class BasicMode;
+      };
     private:
       /*
         private config of CLI class
@@ -108,12 +116,8 @@ namespace nts {
         fileInput: string -> content of file passed as parameter
         inputValue: vector -> extracted inputModifier of argv params or CLI
       */
-      enum CLIMode {
-        BASIC,
-        NCURSES
-      };
       struct config {
-        CLIMode mode;
+        Mode::IMode *mode;
         std::string fileInput;
         std::vector<std::pair<std::string, std::string> > inputValue;
       };
