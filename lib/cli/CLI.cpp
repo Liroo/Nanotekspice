@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <regex>
 
 #include "CLI.hpp"
 
@@ -40,8 +41,30 @@ nts::CLI::CLI(int argc, char *argv[]) try {
   // forEach like where goal is to parse arguments
   // if there is one false argument (bad syntax), it throw an exception that exit software
   for (int i = 2; argv[i]; i++) {
+    // regex for options
+    std::smatch matched;
+    std::regex regexOptions(REG_OPTIONS);
+    std::string arg = std::string(argv[i]);
+
+    // test regex options to know if the argument is an option
+    std::regex_search(arg, matched, regexOptions);
+    if (matched.size() == 3) {
+      // handle mode option
+      if (matched[1].compare("mode") == 0) {
+        if (matched[2].compare("basic") == 0) {
+          _config.mode = nts::CLI::CLIMode::BASIC;
+        } else if (matched[2].compare("ncurses") == 0) {
+          _config.mode = nts::CLI::CLIMode::NCURSES;
+        } else {
+          _config.mode = nts::CLI::CLIMode::BASIC;
+        }
+      } else {
+        throw nts::Exception::CLIException(std::cerr, std::string(argv[i]) + ": " + ECLIUNKNOWOPT);
+      }
+    } else {
     // Extract InputValue from argument here, throw an error if therte is a bad syntax
-    _extractInputValue(std::string(argv[i]));
+      _extractInputValue(arg);
+    }
   }
 
   /*

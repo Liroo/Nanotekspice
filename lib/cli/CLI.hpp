@@ -10,6 +10,7 @@
 # include "Parser.hpp"
 
 # define REG_INPUTCLI "^(\\w+)=([01])"
+# define REG_OPTIONS "--(mode)=(.*)"
 # define CLI_CMD_NOT_FOUND "command not found. try `help`"
 # define CLI_PROMPT "> "
 
@@ -103,10 +104,16 @@ namespace nts {
         private config of CLI class
 
         config is an JS object like represented as a struct in c++
+        mode: CLIMode -> enable ncurses or not
         fileInput: string -> content of file passed as parameter
         inputValue: vector -> extracted inputModifier of argv params or CLI
       */
+      enum CLIMode {
+        BASIC,
+        NCURSES
+      };
       struct config {
+        CLIMode mode;
         std::string fileInput;
         std::vector<std::pair<std::string, std::string> > inputValue;
       };

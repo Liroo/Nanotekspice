@@ -6,6 +6,7 @@
 # define ECLIUSAGE "Usage: nanotekspice file [input=value, ...]"
 # define ECLIACCESS "no such regular file"
 # define ECLIBADSYNTAX "bad syntax"
+# define ECLIUNKNOWOPT "unknown option"
 
 namespace nts {
   namespace Exception {
