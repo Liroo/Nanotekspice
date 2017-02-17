@@ -58,7 +58,7 @@ typedef std::function<nts::Tristate(const nts::FlowChart *)> gateFn_t;
 
 class nts::FlowChart {
   public:
-    FlowChart(const std::pair<Pin *, Pin *> &inputs, const Pin &output, const nts::GateType &type);
+    FlowChart(std::vector<Pin *> *inputs, std::vector<Pin *> *output, const nts::GateType &type);
     ~FlowChart() {};
 
   public:
@@ -71,22 +71,16 @@ class nts::FlowChart {
     static nts::Tristate XOR(const nts::FlowChart *);
     static nts::Tristate fourBitsAdder(const nts::FlowChart *);
     static std::map<GateType, gateFn_t> _gateFn;
-    static std::map<std::string, std::string> tables;
 
   public:
-    nts::Pin *getOutput() const;
+    std::vector<Pin *> *getOutputs() const;
+    std::vector<Pin *> *getInputs() const;
     nts::GateType getType() const;
-    std::vector<Pin *> getInputs() const;
 
   private:
-    std::vector<Pin *> _inputs;
-    Pin *_output;
+    std::vector<Pin *> *_inputs;
+    std::vector<Pin *> *_outputs;
     GateType _type;
-    struct _config {
-      std::regex lexem;
-      nts::Tristate value;;
-    };
-    std::vector<_config> _table;
 };
 
 #endif /* PIN_HPP */

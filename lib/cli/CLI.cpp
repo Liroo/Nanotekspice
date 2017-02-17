@@ -217,14 +217,19 @@ bool nts::CLI::simulate() {
 
     std::for_each(gates.begin(), gates.end(),
     [](const nts::FlowChart *gate) {
-      nts::Pin *outPin = gate->getOutput();
-      nts::IComponent *owner = outPin->getOwner();
+      std::vector<nts::Pin *> *outPins = gate->getOutputs();
+      nts::IComponent *owner = (*outPins)[0]->getOwner();
 
-      if (owner) {
-        std::cout << "compute pin id " << outPin->getID() << std::endl;
-        owner->Compute(outPin->getID());
-      }
+      std::for_each(outPins->begin(), outPins->end(),
+      [&owner](nts::Pin *outPin) {
+        if (owner) {
+          std::cout << "compute pin id " << outPin->getID() << std::endl;
+          owner->Compute(outPin->getID());
+        }
+      });
+
     });
+    
   });
 
   _setDirty(false);

@@ -70,19 +70,10 @@ void nts::AComponent::Dump() const {
   };
 
   std::cout << "[" << this->getType() << "\t" << _name << "]:" << std::endl;
-
   std::for_each(_pins.begin(), _pins.end(),
   [](const std::pair<int, nts::Pin *> &pair) {
     std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << std::endl;
   });
-}
-
-static void computeInputPin(nts::Pin *pin) {
-  nts::IComponent *linkedComp = pin->getLinkedComp();
-  nts::Pin *linkedPin = pin->getLinkedPin();
-
-  if (pin->getComputed() == nts::Tristate::TRUE) { return; }
-  else if (linkedComp) { pin->setState(linkedComp->Compute(linkedPin->getID())); }
 }
 
 nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
@@ -102,20 +93,33 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
   }
 
   nts::FlowChart *gate = _pins[pin_num_this]->getGate();
-  std::vector<nts::Pin *> inputs = gate->getInputs();
-  nts::Pin *output = gate->getOutput();
+  std::vector<nts::Pin *> *inputs = gate->getInputs();
+  std::vector<nts::Pin *> *outputs = gate->getOutputs();
+
+
+  std::function<void (nts::Pin *)> computeInputPin =
+    [](nts::Pin *pinInput) {
+      nts::IComponent *linkedComp = pinInput->getLinkedComp();
+      nts::Pin *linkedPin = pinInput->getLinkedPin();
+
+      if (pinInput->getComputed() == nts::Tristate::TRUE) { return; }
+      else if (linkedComp) { pinInput->setState(linkedComp->Compute(linkedPin->getID())); }
+    };
 
   // if the computed pin is one of the gate's inputs, just compute its linked pin
-  if (_pins[pin_num_this] == inputs[0] || _pins[pin_num_this] == inputs[1]) {
+  if (_pins[pin_num_this] == (*inputs)[0] || _pins[pin_num_this] == (*inputs)[1]) {
     computeInputPin(_pins[pin_num_this]);
   } else {
   // if the computed pin is the gate's output, compute both input then output
     nts::Tristate res;
 
-    std::for_each(inputs.begin(), inputs.end(), computeInputPin);
+    std::for_each(inputs->begin(), inputs->end(), computeInputPin);
     res = gate->Exec();
-    output->setState(res);
-    (output->getLinkedComp()->getPins()[1])->setState(res);
+    std::for_each(outputs->begin(), outputs->end(),
+    [&res](nts::Pin *pinOutput) {
+      pinOutput->setState(res);
+      pinOutput->getLinkedPin()->setState(res);
+    });
   }
   return _pins[pin_num_this]->getState();
 }
