@@ -8,6 +8,8 @@
 # define ECLIBADSYNTAX "bad syntax"
 # define ECLIUNKNOWOPT "unknown option"
 
+# define ECLINCURSESINIT "ncurses failed to init, switch to basic mode"
+
 namespace nts {
   namespace Exception {
     class CLIException: public BaseException {

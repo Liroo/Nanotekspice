@@ -55,7 +55,12 @@ nts::CLI::CLI(int argc, char *argv[]) try {
       // handle mode option
       if (matched[1].compare("mode") == 0) {
         if (matched[2].compare("ncurses") == 0) {
-          _config.mode = new nts::CLI::Mode::NcursesMode();
+          try {
+            // if constructor of ncurses init failed, switch to basic Mode
+            _config.mode = new nts::CLI::Mode::NcursesMode();
+          } catch (nts::Exception::CLIException) {
+            _config.mode = NULL;
+          }
         }
       } else {
         throw nts::Exception::CLIException(std::cerr, std::string(argv[i]) + ": " + ECLIUNKNOWOPT);
@@ -229,7 +234,7 @@ bool nts::CLI::simulate() {
       });
 
     });
-    
+
   });
 
   _setDirty(false);

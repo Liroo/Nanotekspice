@@ -37,6 +37,7 @@ OBJ_BIN = $(addprefix $(OBJ_BINDIR), $(SRC_BIN:.cpp=.o))
 
 INCDIRS := $(addprefix -I,$(shell find $(SRC_LIBDIR) -type d -print))
 CC = g++
+LDFLAGS = -L. -lnanotekspice -lncurses
 FLAGS = -W -Werror -Wextra -Wall -g
 FLAGS += -std=c++11
 CFLAGS = $(FLAGS) $(INCDIRS)
@@ -67,7 +68,7 @@ $(NAME_LIB): $(OBJ_LIB)
 	$(RANLIB) $(NAME_LIB)
 
 $(NAME_GEN): $(NAME_LIB) $(OBJ_BIN)
-	$(CC) -o $(NAME_GEN) $(OBJ_BIN) -L. -lnanotekspice
+	$(CC) -o $(NAME_GEN) $(OBJ_BIN) $(LDFLAGS)
 
 clean:
 	$(RM) $(OBJ_DIR)
