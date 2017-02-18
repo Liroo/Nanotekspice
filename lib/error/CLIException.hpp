@@ -16,6 +16,18 @@ namespace nts {
       public:
         CLIException(std::ostream &os, const std::string &msg)
           : BaseException(os, msg) {};
+        CLIException(std::ostream &os, const std::string &msg, const int &ret)
+          : BaseException(os, msg) {
+            _ret = ret;
+          };
+
+        public:
+          int getReturn() const {
+            return _ret;
+          }
+
+        private:
+          int _ret;
     };
   };
 };

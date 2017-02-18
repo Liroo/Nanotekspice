@@ -92,14 +92,14 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     _config.mode = new nts::CLI::Mode::BasicMode();
   }
 } catch (const nts::Exception::CLIException& e) {
-  // get output stream and print error
-  e.getOs() << e.what() << std::endl;
-  // exit here because we are in main constructor of the software
-  exit(0);
+  // get output stream and re catch error with correct exit code
+  throw nts::Exception::CLIException(e.getOs(), e.what(), 1);
 }
 
 nts::CLI::~CLI() {
-  // everything should be deleted automaticly :')
+  if (_config.mode) {
+    delete _config.mode;
+  }
 }
 
 int nts::CLI::startCLI() {
@@ -140,10 +140,10 @@ bool nts::CLI::_execCmd() {
     If not, continue
   */
   bool isInputModifier = true;
+  // remove whitespace and tabulation so we should be able to compare string using regex or direct access
+  input.erase(std::remove(input.begin(), input.end(), '\t'), input.end());
+  input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
   try {
-    // remove whitespace and tabulation so we should be able to compare string using regex or direct access
-    input.erase(std::remove(input.begin(), input.end(), '\t'), input.end());
-    input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
     // Is regex to match extractInputValue is ok ?
     _extractInputValue(input);
   } catch (const nts::Exception::CLIException&) { // otherwise, CLIException is thrown
