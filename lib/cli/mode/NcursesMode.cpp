@@ -2,7 +2,7 @@
 
 nts::CLI::Mode::NcursesMode::NcursesMode() {
   if ((_win = initscr()) == NULL) {
-    throw nts::Exception::CLIException(std::clog, ECLINCURSESINIT);
+    throw nts::Exception::CLIException(ECLINCURSESINIT);
   }
   /*
     zsh doc:

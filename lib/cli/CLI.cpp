@@ -220,44 +220,43 @@ bool nts::CLI::_isDirty() const {
 
 bool nts::CLI::simulate() {
   // TODO Doc
-if (!_isDirty()) { return true; }
+  if (!_isDirty()) { return true; }
 
-// TODO edit clock
-_parser.setInputValues(_config.inputValue);
-// reset pins compute security
-std::for_each(_comps.begin(), _comps.end(),
-  [](std::pair<std::string, nts::IComponent *> comp) {
-    (comp.second)->resetPins();
-});
-
-std::for_each(_comps.begin(), _comps.end(),
-[](const std::pair<std::string, nts::IComponent *> &comp) {
-  *nts::sout << "Simulate on comp " << (comp.second)->getName() << std::endl;
-
-  std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
-
-  std::for_each(gates.begin(), gates.end(),
-  [&comp](const nts::FlowChart *gate) {
-    std::vector<nts::Pin *> *outPins = gate->getOutputs();
-
-    *nts::sout << "compute pin id " << (*outPins)[0]->getID() << std::endl;
-    (comp.second)->Compute((*outPins)[0]->getID());
+  // TODO edit clock
+  _parser.setInputValues(_config.inputValue);
+  // reset pins compute security
+  std::for_each(_comps.begin(), _comps.end(),
+    [](std::pair<std::string, nts::IComponent *> comp) {
+      (comp.second)->resetPins();
   });
 
-});
+  std::for_each(_comps.begin(), _comps.end(),
+  [](const std::pair<std::string, nts::IComponent *> &comp) {
+    *nts::sout << "Simulate on comp " << (comp.second)->getName() << "\n";
 
-//  reverse clocks' value
-std::for_each(_comps.begin(), _comps.end(),
-  [](std::pair<std::string, nts::IComponent *> comp){
-    if ((comp.second)->getType() == "clock") {
-      nts::Pin *pin = (comp.second)->getPins()[1];
+    std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
 
-      pin->setState((nts::Tristate)(!pin->getState()));
-    }
+    std::for_each(gates.begin(), gates.end(),
+    [&comp](const nts::FlowChart *gate) {
+      std::vector<nts::Pin *> *outPins = gate->getOutputs();
+
+      *nts::sout << "compute pin id " << (*outPins)[0]->getID() << "\n";
+      (comp.second)->Compute((*outPins)[0]->getID());
+    });
+
   });
-_setDirty(false);
-return true;
 
+  //  reverse clocks' value
+  std::for_each(_comps.begin(), _comps.end(),
+    [](std::pair<std::string, nts::IComponent *> comp){
+      if ((comp.second)->getType() == "clock") {
+        nts::Pin *pin = (comp.second)->getPins()[1];
+
+        pin->setState((nts::Tristate)(!pin->getState()));
+      }
+    });
+  _setDirty(false);
+  return true;
 }
 
 bool nts::CLI::loop() {
