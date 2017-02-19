@@ -219,11 +219,33 @@ bool nts::CLI::_isDirty() const {
 }
 
 bool nts::CLI::simulate() {
+  _parser.setInputValues(_config.inputValue);
+
+  //  function to reverse clock's value
+  std::function<void(std::pair<std::string, std::string> &inputValue)> uploadClock =
+      [this](std::pair<std::string, std::string> &inputValue)->void{
+        std::string name(inputValue.first);
+        int value;
+        std::stringstream(inputValue.second) >> value;
+        std::map<std::string, nts::IComponent *>::iterator it;
+
+        it = std::find_if(_comps.begin(), _comps.end(),
+          [&name](const std::pair<std::string, nts::IComponent *> comp) {
+            return (comp.second)->getName() == name && (comp.second)->getType() == "clock";
+          });
+        if (it != _comps.end()) {
+            inputValue.second = std::to_string(!value);
+            ((*it).second)->uploadRising();
+          }
+        };
+
   // TODO Doc
-  if (!_isDirty()) { return true; }
+  if (!_isDirty()) {
+      std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
+    return true;
+  }
 
   // TODO edit clock
-  _parser.setInputValues(_config.inputValue);
   // reset pins compute security
   std::for_each(_comps.begin(), _comps.end(),
     [](std::pair<std::string, nts::IComponent *> comp) {
@@ -246,15 +268,7 @@ bool nts::CLI::simulate() {
 
   });
 
-  //  reverse clocks' value
-  std::for_each(_comps.begin(), _comps.end(),
-    [](std::pair<std::string, nts::IComponent *> comp){
-      if ((comp.second)->getType() == "clock") {
-        nts::Pin *pin = (comp.second)->getPins()[1];
-
-        pin->setState((nts::Tristate)(!pin->getState()));
-      }
-    });
+  std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
   _setDirty(false);
   return true;
 }

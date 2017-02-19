@@ -49,6 +49,10 @@ class nts::AComponent : public nts::IComponent {
     static IComponent *createOutput(const std::string &value);
     static std::map<std::string, createFn_t> _fn;
 
+    public:
+      virtual bool isRising() const { return false; };
+      virtual void uploadRising() {};
+
   protected:
     std::string _name;
     std::string _type;
