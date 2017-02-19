@@ -37,6 +37,9 @@ class nts::IComponent {
     virtual std::string getName() const = 0;
     virtual std::string getType() const = 0;
     virtual std::vector<nts::FlowChart *> getGates() const = 0;
+
+  public:
+    virtual void resetPins() const = 0;
 };
 
 #endif /* ICOMPONENT_HPP */

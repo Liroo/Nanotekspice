@@ -9,16 +9,22 @@ NAME_LIB = libnanotekspice.a
 SRC_LIBDIR = lib/
 OBJ_LIBDIR = $(OBJ_DIR)lib/
 
-SRC_LIB =	parser/Parser.cpp						\
-					cli/CLI.cpp									\
-					cli/mode/NcursesMode.cpp		\
-					cli/mode/BasicMode.cpp			\
-					error/BaseException.cpp			\
-					components/AComponent.cpp		\
-					components/Pin.cpp					\
-					components/Input.cpp				\
-					components/Comp4001.cpp			\
-					components/Output.cpp
+SRC_LIB =	parser/Parser.cpp									\
+					cli/CLI.cpp												\
+					cli/mode/NcursesMode.cpp					\
+					cli/mode/BasicMode.cpp						\
+					error/BaseException.cpp						\
+					components/AComponent.cpp					\
+					components/Pin.cpp								\
+					components/CInputs/Input.cpp			\
+					components/CInputs/Clock.cpp			\
+					components/CInputs/True.cpp				\
+					components/CInputs/False.cpp			\
+					components/COutput/Output.cpp			\
+					components/C4001/Comp4001.cpp			\
+					components/C4008/Comp4008.cpp			\
+					components/C4011/Comp4011.cpp			\
+					components/C4013/Comp4013.cpp
 
 OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 

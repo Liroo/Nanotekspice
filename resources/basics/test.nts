@@ -1,14 +1,42 @@
 .chipsets:
-input a
-input ab
-input abc
-input abcd
 
-4001 toto
+4008 toto
 
-output out
+input A1
+input B1
+input A2
+input B2
+input A3
+input B3
+input A4
+input B4
+
+output S1
+output S2
+output S3
+output S4
+
+input carryIn
+output carryOut
+
+# dsqdsq
+
+clock c
+true t
+false f
 
 .links:
-a:1 toto:1
-ab:1 toto:2
-out:1 toto:3
+A1:1 toto:7
+A2:1 toto:5
+A3:1 toto:3
+A4:1 toto:1
+B1:1 toto:6
+B2:1 toto:4
+B3:1 toto:2
+B4:1 toto:15
+carryIn:1 toto:9
+S1:1 toto:10
+S2:1 toto:11
+S3:1 toto:12
+S4:1 toto:13
+carryOut:1 toto:14

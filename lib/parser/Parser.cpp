@@ -133,7 +133,7 @@ void nts::Parser::setInputValues(const std::vector<std::pair<std::string, std::s
 
     if (it != _comps.end()) {
       //  check if variable initialized in args is an input
-      if ((*it).second->getType() != "input" && (*it).second->getType() == "clock") {
+      if ((*it).second->getType() != "input" && (*it).second->getType() != "clock") {
         throw nts::Exception::ParserException(std::cerr, (*it).second->getType() + " " + inputValue.first + ": " + EPARSARGBADTYPE);
       }
       std::stringstream(inputValue.second) >> value;
@@ -183,8 +183,6 @@ void nts::Parser::parseTree(t_ast_node& root) {
     std::regex_search((*(*root.children)[2]->children)[i]->value, matchedSecond, regLink);
     std::stringstream(matched[2].str()) >> firstPin;
     std::stringstream(matchedSecond[2].str()) >> secondPin;
-    std::cout << "set link between " << matched[1].str() << ": " << firstPin << " ";
-    std::cout << "and " << matchedSecond[1].str() << ": " << secondPin << std::endl;
     //  check if chipsets to link are defined
     if ((std::find_if(_comps.begin(), _comps.end(),
         [&matched](const std::pair<std::string, nts::IComponent*> &pair){
@@ -207,6 +205,7 @@ void nts::Parser::parseTree(t_ast_node& root) {
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent*> &pair) {
     if ((pair.second)->getType() == "output" && !((pair.second)->getPins()[1]->getLinkedComp())) {
+      //  TODO should every pin output linked ? or every output variable linked ?
       throw nts::Exception::ParserException(std::cerr, (pair.second)->getName() + EPARSOUTPUTNOTLINKED);
     }
   });
