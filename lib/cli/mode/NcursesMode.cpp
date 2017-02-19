@@ -62,8 +62,8 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
       // don't add new line to the command
       if (inputChar != KEY_NEWLINE) {
         std::string strInput("");
-        const char *keylol = unctrl(inputChar);
-        strInput = keylol;
+        const char *printableInput = unctrl(inputChar);
+        strInput = printableInput;
         _inputCmd.insert(_inputCursorIndex, strInput);
         // print the character because of noecho() mode
         for (int i = 0; i < (int)strInput.size(); i++) {
