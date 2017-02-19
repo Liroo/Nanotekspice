@@ -1,5 +1,7 @@
 #include "NcursesMode.hpp"
 
+// So much work on this input user class
+
 nts::CLI::Mode::NcursesMode::NcursesMode() {
   if ((_win = initscr()) == NULL) {
     throw nts::Exception::CLIException(ECLINCURSESINIT);
@@ -16,10 +18,13 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   cbreak();
   noecho();
   keypad(_win, true);
+  // this line made many things <3
+  scrollok(_win, true);
 
   _cmdMap = {
     { (int)(KEY_LEFT), [this]() -> void { this->_handleKeyLeft(); } },
-    { (int)(KEY_RIGHT), [this]() -> void { this->_handleKeyRight(); } }
+    { (int)(KEY_RIGHT), [this]() -> void { this->_handleKeyRight(); } },
+    { (int)(KEY_BACKSPACE), [this]() -> void { this->_handleKeyDeleteCharacter(); } }
   };
   // init some attributes
   _inputCmd = "";
@@ -56,11 +61,18 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
       // handle printable key which mean this is an char from the command
       // don't add new line to the command
       if (inputChar != KEY_NEWLINE) {
-        _inputCursorIndex += 1;
-        _inputCmd += inputChar;
+        std::string strInput("");
+        const char *keylol = unctrl(inputChar);
+        strInput = keylol;
+        _inputCmd.insert(_inputCursorIndex, strInput);
+        // print the character because of noecho() mode
+        for (int i = 0; i < (int)strInput.size(); i++) {
+          winsch(_win, strInput[i]);
+          _handleKeyRight();
+        }
+      } else {
+        *nts::sout << "\n";
       }
-      // print the character because of noecho() mode
-      wprintw(_win, "%c", inputChar);
     }
   }
   return _inputCmd;
@@ -88,6 +100,27 @@ void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
   }
 }
 
+void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
+  _handleKeyLeft();
+  if (_inputCmd.size() > 0) {
+    _inputCmd.erase(_inputCursorIndex, 1);
+    if ((int)_inputCmd.size() > COLS - CLI_PROMPT_SIZE - 1) {
+      // save cursor position
+      std::pair<int, int> cursorPosition = _getCursorPosition();
+      // create a substr to re write all the next input on multiple line
+      std::string subStr = _inputCmd.substr(_inputCursorIndex);
+      // write it
+      mvwprintw(_win, cursorPosition.second, cursorPosition.first, "%s", subStr.c_str());
+      // remove last extra char
+      wdelch(_win);
+      // move cursor to last position
+      wmove(_win, cursorPosition.second, cursorPosition.first);
+    } else {
+      wdelch(_win);
+    }
+  }
+}
+
 std::pair<int, int> nts::CLI::Mode::NcursesMode::_getCursorPosition() {
   // create pair variable which really is the position of the cursor on the screen
   std::pair<int, int> cursorPosition;
@@ -102,8 +135,8 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
   int yNew = 0;
   if (x < 0 && y > 0) {
     yNew = y - 1;
-    xNew = COLS;
-  } else if (x > COLS && y < LINES) {
+    xNew = COLS - 1;
+  } else if (x > COLS - 1) {
     yNew = y + 1;
     xNew = 0;
   } else {

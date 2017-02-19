@@ -13,6 +13,7 @@
 # define REG_OPTIONS "--(mode)=(.*)"
 # define CLI_CMD_NOT_FOUND "command not found. try `help`"
 # define CLI_PROMPT "> "
+# define CLI_PROMPT_SIZE 2
 
 
 /*

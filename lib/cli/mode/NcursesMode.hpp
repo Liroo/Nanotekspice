@@ -32,6 +32,7 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
 
     void _handleKeyLeft();
     void _handleKeyRight();
+    void _handleKeyDeleteCharacter();
 
   // ncurses help
   private:
