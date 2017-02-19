@@ -23,9 +23,12 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   };
   // init some attributes
   _inputCmd = "";
+  nts::sout = new nts::CLI::Mode::NcursesOut(_win);
+  nts::serr = nts::sout;
 }
 
 nts::CLI::Mode::NcursesMode::~NcursesMode() {
+  delete nts::sout;
   endwin();
 }
 
@@ -34,7 +37,6 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
 
   // init input
   _inputCursorIndex = 0;
-  _inputSize = 0;
   _inputCmd = "";
   // prompt
   wprintw(_win, CLI_PROMPT);
@@ -55,7 +57,6 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
       // don't add new line to the command
       if (inputChar != KEY_NEWLINE) {
         _inputCursorIndex += 1;
-        _inputSize += 1;
         _inputCmd += inputChar;
       }
       // print the character because of noecho() mode
@@ -78,7 +79,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
 
 void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
   // if cursor is already on the first position of the string, return
-  if (_inputCursorIndex > _inputSize - 1) {
+  if (_inputCursorIndex > (int)(_inputCmd.size()) - 1) {
     return;
   }
   std::pair<int, int> cursorPosition = _getCursorPosition();
@@ -113,4 +114,31 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
     return false;
   }
   return true;
+}
+
+nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const std::string& str) {
+  if (_win) {
+    wprintw(_win, "%s", str.c_str());
+  } else {
+    printw("%s", str.c_str());
+  }
+  return *this;
+}
+
+nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const char* str) {
+  if (_win) {
+    wprintw(_win, "%s", str);
+  } else {
+    printw("%s", str);
+  }
+  return *this;
+}
+
+nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(int i) {
+  if (_win) {
+    wprintw(_win, "%d", i);
+  } else {
+    printw("%d", i);
+  }
+  return *this;
 }

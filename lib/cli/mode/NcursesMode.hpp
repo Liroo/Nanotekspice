@@ -3,26 +3,28 @@
 
 # include <map>
 # include <utility>
-# include "IMode.hpp"
+# include "AMode.hpp"
 # include "ncurses.h"
 
 // Extension of ncurses to know if inputChar is newline
 # define KEY_NEWLINE 10
 
-class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::IMode {
+class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
   public:
     NcursesMode();
     virtual ~NcursesMode();
 
+  // read input Command method
   public:
     virtual std::string readCmd();
 
+  // ncurses and input attributes
   private:
     int _inputCursorIndex;
-    int _inputSize;
     std::string _inputCmd;
     WINDOW *_win;
 
+  // keyBinding
   public:
     typedef std::function<void()> KeyBind;
   private:
@@ -35,6 +37,21 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::IMode {
   private:
     std::pair<int, int> _getCursorPosition();
     bool _moveCursorPosition(int, int);
+};
+
+class nts::CLI::Mode::NcursesOut: public nts::CLI::Mode::IOut {
+  public:
+    NcursesOut(WINDOW *win) {
+      _win = win;
+    }
+
+  public:
+    virtual IOut& operator<<(const std::string&);
+    virtual IOut& operator<<(const char *);
+    virtual IOut& operator<<(int);
+
+  private:
+    WINDOW *_win;
 };
 
 #endif

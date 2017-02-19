@@ -12,12 +12,12 @@ int main(int argc, char *argv[]) {
   } catch (const nts::Exception::CLIException& e) {
     // print error and return
     // I was using exit before but exit does not handle destructor
-    e.getOs() << e.what() << std::endl;
+    std::cerr << e.what() << std::endl;
     return e.getReturn();
   }
 
   if (cli) {
-    delete cli;    
+    delete cli;
   }
   return 0;
 }

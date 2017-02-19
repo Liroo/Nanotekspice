@@ -14,10 +14,10 @@ namespace nts {
   namespace Exception {
     class CLIException: public BaseException {
       public:
-        CLIException(std::ostream &os, const std::string &msg)
-          : BaseException(os, msg) {};
-        CLIException(std::ostream &os, const std::string &msg, const int &ret)
-          : BaseException(os, msg) {
+        CLIException(const std::string &msg)
+          : BaseException(std::cerr, msg) {};
+        CLIException(const std::string &msg, const int &ret)
+          : BaseException(std::cerr, msg) {
             _ret = ret;
           };
 

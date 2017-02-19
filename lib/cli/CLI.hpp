@@ -103,9 +103,14 @@ namespace nts {
       // definition of mode namespace like of mode of CLI
       class Mode {
         public:
-          class IMode;
+          class AMode;
           class NcursesMode;
           class BasicMode;
+          /**/
+          class IOut;
+          class NcursesOut;
+          class BasicOut;
+          /**/
       };
     private:
       /*
@@ -117,7 +122,7 @@ namespace nts {
         inputValue: vector -> extracted inputModifier of argv params or CLI
       */
       struct config {
-        Mode::IMode *mode;
+        Mode::AMode *mode;
         std::string fileInput;
         std::vector<std::pair<std::string, std::string> > inputValue;
       };
@@ -133,6 +138,8 @@ namespace nts {
       bool _isDirty() const;
 
   };
+  extern nts::CLI::Mode::IOut *sout;
+  extern nts::CLI::Mode::IOut *serr;
 }; // namespace nts
 
 #endif

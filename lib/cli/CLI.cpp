@@ -5,6 +5,11 @@
 #include "BasicMode.hpp"
 #include "NcursesMode.hpp"
 
+namespace nts {
+  nts::CLI::Mode::IOut *sout = NULL;
+  nts::CLI::Mode::IOut *serr = NULL;
+};
+
 /*
   Init CLI by:
   - extracting file content
@@ -13,7 +18,7 @@
 nts::CLI::CLI(int argc, char *argv[]) try {
   if (argc == 1) {
     // error if there is no file argument
-    throw nts::Exception::CLIException(std::cout, ECLIUSAGE);
+    throw nts::Exception::CLIException(ECLIUSAGE);
   }
 
   std::ifstream fileInput;
@@ -37,7 +42,7 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     _config.fileInput = out.str();
   } catch (std::ifstream::failure e) {
     // convert ifstream exception in CLIException understood by the software
-    throw nts::Exception::CLIException(std::cerr, std::string(argv[1]) + ": " + ECLIACCESS);
+    throw nts::Exception::CLIException(std::string(argv[1]) + ": " + ECLIACCESS);
   }
 
   // forEach like where goal is to parse arguments
@@ -63,7 +68,7 @@ nts::CLI::CLI(int argc, char *argv[]) try {
           }
         }
       } else {
-        throw nts::Exception::CLIException(std::cerr, std::string(argv[i]) + ": " + ECLIUNKNOWOPT);
+        throw nts::Exception::CLIException(std::string(argv[i]) + ": " + ECLIUNKNOWOPT);
       }
     } else {
     // Extract InputValue from argument here, throw an error if therte is a bad syntax
@@ -92,11 +97,16 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     _config.mode = new nts::CLI::Mode::BasicMode();
   }
 } catch (const nts::Exception::CLIException& e) {
+  // If Mode is already define, delete it to be sure terminal is well reset
+  if (_config.mode) {
+    delete _config.mode;
+  }
   // get output stream and re catch error with correct exit code
-  throw nts::Exception::CLIException(e.getOs(), e.what(), 1);
+  throw nts::Exception::CLIException(e.what(), 1);
 }
 
 nts::CLI::~CLI() {
+  // delete Mode to reset terminal and free memory
   if (_config.mode) {
     delete _config.mode;
   }
@@ -119,8 +129,7 @@ int nts::CLI::startCLI() {
      // should check if every input/clock has a value
      _parser.parseTree(*root);
    } catch (nts::Exception::ParserException &e) {
-     // show the message then return
-     e.getOs() << e.what() << std::endl;
+     *nts::serr << e.what() << "\n";
      return 1;
    }
    _comps = _parser.getComponentsMap();
@@ -162,7 +171,7 @@ bool nts::CLI::_execCmd() {
     cmd = _cmd.at(input);
   } catch (const std::out_of_range&) {
     // cmd not found, ask user to type help
-    std::clog << input << ": " << CLI_CMD_NOT_FOUND << std::endl;
+    *nts::sout << input << ": " << CLI_CMD_NOT_FOUND << "\n";
   }
   // cmd is found, so let's try to run it and return him :)
   if ((bool)cmd) {
@@ -176,14 +185,14 @@ bool nts::CLI::exitCLI() {
 }
 
 bool nts::CLI::help() {
-  std::clog << "nanotekspice:" << std::endl
-            << "  exit              -    exit nanotekspice" << std::endl
-            << "  help              -    show help" << std::endl
-            << "  display           -    display" << std::endl
-            << "  simulate          -    simulate" << std::endl
-            << "  loop              -    loop" << std::endl
-            << "  dump              -    dump" << std::endl
-            << "  ^(\\w+)=([01])    -    inputModifier" << std::endl
+  *nts::serr << "nanotekspice:" << "\n"
+            << "  exit              -    exit nanotekspice" << "\n"
+            << "  help              -    show help" << "\n"
+            << "  display           -    display" << "\n"
+            << "  simulate          -    simulate" << "\n"
+            << "  loop              -    loop" << "\n"
+            << "  dump              -    dump" << "\n"
+            << "  ^(\\w+)=([01])    -    inputModifier" << "\n"
             ; // THIS SEMI COLON need to stay here, in case cmd is added in the future
   return true;
 }
@@ -197,7 +206,7 @@ bool nts::CLI::display() const {
     }
   });
   // Then ouput newline
-  std::cout << std::endl;
+  *nts::sout << "\n";
   return true;
 }
 
@@ -216,7 +225,7 @@ bool nts::CLI::simulate() {
   _parser.setInputValues(_config.inputValue);
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp) {
-    std::cout << "Simulate on comp " << (comp.second)->getName() << std::endl;
+    *nts::sout << "Simulate on comp " << (comp.second)->getName() << "\n";
 
     std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
 
@@ -228,7 +237,7 @@ bool nts::CLI::simulate() {
       std::for_each(outPins->begin(), outPins->end(),
       [&owner](nts::Pin *outPin) {
         if (owner) {
-          std::cout << "compute pin id " << outPin->getID() << std::endl;
+          *nts::sout << "compute pin id " << outPin->getID() << "\n";
           owner->Compute(outPin->getID());
         }
       });
@@ -243,7 +252,7 @@ bool nts::CLI::simulate() {
 
 bool nts::CLI::loop() {
   // Should loop simulate :)
-  std::cout << "loop" << std::endl;
+  *nts::sout << "loop" << "\n";
 
   return true;
 }
@@ -255,7 +264,7 @@ bool nts::CLI::dump() const {
     (comp.second)->Dump();
   });
   // Then output newline
-  std::cout << std::endl;
+  *nts::sout << "\n";
   return true;
 }
 
@@ -268,7 +277,7 @@ void nts::CLI::_extractInputValue(const std::string &arg) {
   std::regex_search(arg, matched, regexInput);
   // If there is no 3 arguments (every group, input name, input value = 0 | 1), throw an error
   if (matched.size() != 3) {
-    throw nts::Exception::CLIException(std::cerr, arg + ": " + ECLIBADSYNTAX);
+    throw nts::Exception::CLIException(arg + ": " + ECLIBADSYNTAX);
   }
 
   /*
