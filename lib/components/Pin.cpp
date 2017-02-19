@@ -58,6 +58,7 @@ std::map<nts::GateType, gateFn_t> nts::FlowChart::_gateFn = {
   { nts::GateType::NOR, &nts::FlowChart::NOR },
   { nts::GateType::BITSADDER, &nts::FlowChart::bitsAdder },
   { nts::GateType::FLIPFLOP, &nts::FlowChart::flipFlop },
+  { nts::GateType::TENBITSJOHNSONDECADE, &nts::FlowChart::tenBitsJohnsonDecade },
   { nts::GateType::NAND, &nts::FlowChart::NAND },
   { nts::GateType::AND, &nts::FlowChart::AND },
   { nts::GateType::OR, &nts::FlowChart::OR },
@@ -129,14 +130,37 @@ void nts::FlowChart::bitsAdder(const nts::FlowChart *gate) {
     (*outputs)[0]->setState(nts::Tristate::UNDEFINED);
     (*outputs)[1]->setState(nts::Tristate::UNDEFINED);
     return;
-   }
+  }
   (*outputs)[0]->setState(nts::Tristate(a && b));
   (*outputs)[1]->setState(nts::Tristate((a && b) || (a && carryIn) || (b && carryIn)));
 }
 
 void nts::FlowChart::flipFlop(const nts::FlowChart *gate) {
+  std::vector<nts::Pin *> *outputs = gate->getOutputs();
+  std::vector<nts::Pin *> *inputs = gate->getInputs();
+  nts::Tristate data = (*inputs)[2]->getState();
+  nts::Tristate last = (*outputs)[2]->getState();
+
+  if (!gate->hasDefinedPins()) {
+    (*outputs)[0]->setState(nts::Tristate::UNDEFINED);
+    (*outputs)[1]->setState(nts::Tristate::UNDEFINED);
+    (*outputs)[2]->setState(nts::Tristate::UNDEFINED);
+    return;
+  }
+  if ((*inputs)[0]->getLinkedComp()->isRising()) {
+    (*outputs)[0]->setState(data);
+    (*outputs)[1]->setState((int)data < 0 ? nts::Tristate::UNDEFINED : nts::Tristate(!data));
+    (*outputs)[2]->setState(data);
+  } else {
+    (*outputs)[0]->setState(last);
+    (*outputs)[1]->setState((int)last < 0 ? nts::Tristate::UNDEFINED : nts::Tristate(!last));
+  }
+}
+
+void nts::FlowChart::tenBitsJohnsonDecade(const nts::FlowChart *gate) {
   (void)gate;
 }
+
 
 void nts::FlowChart::NAND(const nts::FlowChart *gate) {
   (void)gate;
