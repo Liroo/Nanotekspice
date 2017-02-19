@@ -1,11 +1,9 @@
 #include "IComponent.hpp"
 
-nts::Pin::Pin(const nts::IComponent *owner,
-              const int &id,
+nts::Pin::Pin(const int &id,
               const nts::Tristate &state,
               const nts::IComponent *comp,
               const nts::Tristate &computed) {
-  _owner = const_cast<nts::IComponent *>(owner);
   _id = id;
   _gate = NULL;
   _linkedComp = const_cast<IComponent *>(comp);
@@ -22,10 +20,6 @@ void nts::Pin::setComp(const IComponent *newComp, const int &pin) {
 
 nts::IComponent *nts::Pin::getLinkedComp() const {
   return _linkedComp;
-}
-
-nts::IComponent *nts::Pin::getOwner() const {
-  return _owner;
 }
 
 void nts::Pin::setState(const nts::Tristate &newState) {
@@ -62,11 +56,12 @@ nts::FlowChart *nts::Pin::getGate() const {
 
 std::map<nts::GateType, gateFn_t> nts::FlowChart::_gateFn = {
   { nts::GateType::NOR, &nts::FlowChart::NOR },
+  { nts::GateType::BITSADDER, &nts::FlowChart::bitsAdder },
+  { nts::GateType::FLIPFLOP, &nts::FlowChart::flipFlop },
   { nts::GateType::NAND, &nts::FlowChart::NAND },
   { nts::GateType::AND, &nts::FlowChart::AND },
   { nts::GateType::OR, &nts::FlowChart::OR },
-  { nts::GateType::XOR, &nts::FlowChart::XOR },
-  { nts::GateType::FOURBITSADDER, &nts::FlowChart::fourBitsAdder }
+  { nts::GateType::XOR, &nts::FlowChart::XOR }
  };
 
 nts::FlowChart::FlowChart(std::vector<nts::Pin *> *inputs,
@@ -103,42 +98,62 @@ bool nts::FlowChart::hasDefinedPins() const {
           }) == _inputs->end();
 }
 
-nts::Tristate nts::FlowChart::NOR(const nts::FlowChart *gate) {
+void nts::FlowChart::NOR(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *inputs = gate->getInputs();
+  std::vector<nts::Pin *> *outputs = gate->getOutputs();
+  nts::Tristate newState;
 
-  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
-  return nts::Tristate(std::accumulate(inputs->begin(), inputs->end(), 0,
-          [](int &acc, nts::Pin *pin)->int {
-            return acc ^ (int)pin->getState();
-          }));
+  if (!gate->hasDefinedPins()) { newState = nts::Tristate::UNDEFINED; }
+  else {
+    newState =
+      (nts::Tristate)std::accumulate(inputs->begin(), inputs->end(), 0,
+      [](int &acc, nts::Pin *pin)->int {
+        return acc ^ (int)pin->getState();
+      });
+    }
+  std::for_each(outputs->begin(), outputs->end(),
+  [&newState](nts::Pin *pinOutput) {
+    pinOutput->setState(newState);
+    pinOutput->getLinkedPin()->setState(newState);
+  });
 }
 
-nts::Tristate nts::FlowChart::NAND(const nts::FlowChart *gate) {
+void nts::FlowChart::bitsAdder(const nts::FlowChart *gate) {
+  std::vector<nts::Pin *> *outputs = gate->getOutputs();
+  std::vector<nts::Pin *> *inputs = gate->getInputs();
+  bool a = (*inputs)[0]->getState();
+  bool b = (*inputs)[0]->getState();
+  bool carryIn = (*inputs)[0]->getState();
+
+  if (!gate->hasDefinedPins()) {
+    (*outputs)[0]->setState(nts::Tristate::UNDEFINED);
+    (*outputs)[1]->setState(nts::Tristate::UNDEFINED);
+    return;
+   }
+  (*outputs)[0]->setState(nts::Tristate(a && b));
+  (*outputs)[1]->setState(nts::Tristate((a && b) || (a && carryIn) || (b && carryIn)));
+}
+
+void nts::FlowChart::flipFlop(const nts::FlowChart *gate) {
   (void)gate;
-  if (!gate->hasDefinedPins()) { return nts::Tristate::UNDEFINED; }
-  return nts::Tristate::TRUE;
 }
 
-nts::Tristate nts::FlowChart::AND(const nts::FlowChart *gate) {
+void nts::FlowChart::NAND(const nts::FlowChart *gate) {
   (void)gate;
-  return nts::Tristate::UNDEFINED;
 }
 
-nts::Tristate nts::FlowChart::OR(const nts::FlowChart *gate) {
+void nts::FlowChart::AND(const nts::FlowChart *gate) {
   (void)gate;
-  return nts::Tristate::UNDEFINED;
 }
 
-nts::Tristate nts::FlowChart::XOR(const nts::FlowChart *gate) {
+void nts::FlowChart::OR(const nts::FlowChart *gate) {
   (void)gate;
-  return nts::Tristate::UNDEFINED;
 }
 
-nts::Tristate nts::FlowChart::fourBitsAdder(const nts::FlowChart *gate) {
+void nts::FlowChart::XOR(const nts::FlowChart *gate) {
   (void)gate;
-  return nts::Tristate::UNDEFINED;
 }
 
-nts::Tristate nts::FlowChart::Exec() const {
-  return _gateFn[_type](this);
+void nts::FlowChart::Exec() const {
+  _gateFn[_type](this);
 }
