@@ -104,6 +104,13 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
   _handleKeyLeft();
   if (_inputCmd.size() > 0) {
     _inputCmd.erase(_inputCursorIndex, 1);
+    /*
+      we could use same algorithm to delete a char inside the terminal
+      but the way we do things is much slower on multiple lines
+      Actually I use many libcall to ncurses when I have to rewrite
+      multiple lines on the terminal
+      it's O(N) speed on multiple lines where is O(1) on single
+    */
     if ((int)_inputCmd.size() > COLS - CLI_PROMPT_SIZE - 1) {
       // save cursor position
       std::pair<int, int> cursorPosition = _getCursorPosition();
