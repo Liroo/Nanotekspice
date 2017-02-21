@@ -18,13 +18,22 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   cbreak();
   noecho();
   keypad(_win, true);
+  mouseinterval(0);
+  mousemask(BUTTON1_CLICKED | BUTTON4_PRESSED | BUTTON2_PRESSED, NULL);
   // this line made many things <3
   scrollok(_win, true);
 
   _cmdMap = {
+    // handled keys which all have a different behavior
     { (int)(KEY_LEFT), [this]() -> void { this->_handleKeyLeft(); } },
     { (int)(KEY_RIGHT), [this]() -> void { this->_handleKeyRight(); } },
-    { (int)(KEY_BACKSPACE), [this]() -> void { this->_handleKeyDeleteCharacter(); } }
+    { (int)(KEY_BACKSPACE), [this]() -> void { this->_handleKeyDeleteCharacter(); } },
+    { (int)(KEY_MOUSE), [this]() -> void { this->_handleKeyMouseEvent(); } },
+    { (int)(KEY_UP), [this]() -> void { this->_handleKeyHistoryForward(); } },
+    { (int)(KEY_DOWN), [this]() -> void { this->_handleKeyHistoryBackward(); } },
+
+    // Unhandled keys
+    { (int)('\t'), [this]() -> void { this->_handleUnhandledKey(); } },
   };
   // init some attributes
   _inputCmd = "";
@@ -58,24 +67,33 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
       keyBind = _cmdMap.at(inputChar);
       keyBind();
     } catch (const std::out_of_range&) {
-      // handle printable key which mean this is an char from the command
-      // don't add new line to the command
-      if (inputChar != KEY_NEWLINE) {
-        std::string strInput("");
-        const char *printableInput = unctrl(inputChar);
-        strInput = printableInput;
-        _inputCmd.insert(_inputCursorIndex, strInput);
-        // print the character because of noecho() mode
-        for (int i = 0; i < (int)strInput.size(); i++) {
-          winsch(_win, strInput[i]);
-          _handleKeyRight();
-        }
-      } else {
-        *nts::sout << "\n";
-      }
+      // add key to the buffer and move the cursor
+      _addKeyToBuffer(inputChar);
     }
   }
   return _inputCmd;
+}
+
+void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
+  // handle printable key which mean this is an char from the command
+  // don't add new line to the command
+  if (inputChar != KEY_NEWLINE) {
+    std::string strInput("");
+    const char *printableInput = unctrl(inputChar);
+    strInput = printableInput;
+    _inputCmd.insert(_inputCursorIndex, strInput);
+    // print the character because of noecho() mode
+    for (int i = 0; i < (int)strInput.size(); i++) {
+      // insert char at correct position
+      winsch(_win, strInput[i]);
+      // then move the cursor to the right as a real cmd interpretor
+      _handleKeyRight();
+    }
+  } else {
+    // print \n and refresh / flush the window
+    *nts::sout << "\n";
+    wrefresh(_win);
+  }
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
@@ -101,6 +119,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
+  if (_inputCursorIndex < 1) { return; }
   _handleKeyLeft();
   if (_inputCmd.size() > 0) {
     _inputCmd.erase(_inputCursorIndex, 1);
@@ -128,6 +147,35 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
   }
 }
 
+void nts::CLI::Mode::NcursesMode::_handleKeyMouseEvent() {
+  // mouse event structure
+  MEVENT event;
+
+  // get mouse specific event to correctly get scroll direction
+  if (getmouse(&event) == OK) {
+    std::bitset<sizeof(event.bstate)> test(event.bstate);
+    printw("%s\n", test.to_string().c_str());
+    if (event.bstate & BUTTON4_PRESSED)
+      wprintw(_win, "Button4\n");
+    else if (event.bstate & BUTTON2_PRESSED)
+      wprintw(_win, "Button2\n");
+  }
+}
+
+void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
+  // TODO
+  //wscrl(_win, 1);
+}
+
+void nts::CLI::Mode::NcursesMode::_handleKeyHistoryBackward() {
+  // TODO
+  //wscrl(_win, -1);
+}
+
+void nts::CLI::Mode::NcursesMode::_handleUnhandledKey() {
+  return;
+}
+
 std::pair<int, int> nts::CLI::Mode::NcursesMode::_getCursorPosition() {
   // create pair variable which really is the position of the cursor on the screen
   std::pair<int, int> cursorPosition;
@@ -144,8 +192,14 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
     yNew = y - 1;
     xNew = COLS - 1;
   } else if (x > COLS - 1) {
-    yNew = y + 1;
-    xNew = 0;
+    if (y == LINES - 1) {
+      waddch(_win, '\n');
+      yNew = y;
+      xNew = 0;
+    } else {
+      yNew = y + 1;
+      xNew = 0;
+    }
   } else {
     yNew = y;
     xNew = x;

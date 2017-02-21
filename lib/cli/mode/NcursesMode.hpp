@@ -28,11 +28,19 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
   public:
     typedef std::function<void()> KeyBind;
   private:
+    // basic function to add key to buffer and move correctly the cursor
+    void _addKeyToBuffer(int);
+
     std::map<int, KeyBind> _cmdMap;
 
     void _handleKeyLeft();
     void _handleKeyRight();
     void _handleKeyDeleteCharacter();
+    void _handleKeyMouseEvent();
+    void _handleKeyHistoryForward();
+    void _handleKeyHistoryBackward();
+
+    void _handleUnhandledKey();
 
   // ncurses help
   private:

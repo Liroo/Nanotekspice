@@ -1,0 +1,32 @@
+providers: [
+  {
+    key: "bt"
+    config:
+      commands: [
+        {
+          project: "/Users/pierre/Epitech/cpp_nanotekspice"
+          source: "/Users/pierre/Epitech/cpp_nanotekspice/.build-tools.cson"
+          name: "Make"
+          command: "make"
+          wd: "."
+          env: {}
+          modifier: {}
+          environment:
+            name: "child_process"
+            config:
+              stdoe: "both"
+          stdout:
+            pipeline: []
+          stderr:
+            pipeline: []
+          output:
+            console:
+              close_success: true
+              queue_in_buffer: true
+              colors: false
+              stdin: false
+          version: 2
+        }
+      ]
+  }
+]

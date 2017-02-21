@@ -113,10 +113,6 @@ nts::CLI::~CLI() {
 }
 
 int nts::CLI::startCLI() {
-  // WE SHALL MOVE SOME OF THIS LOGIC INTO SIMULATE,
-  // feed parser should be handle in main or cstr and
-  // we shall call simulate before startCLI in main
-
    std::istringstream input(_config.fileInput);
    std::string line;
    nts::t_ast_node *root;
@@ -152,6 +148,9 @@ bool nts::CLI::_execCmd() {
   // remove whitespace and tabulation so we should be able to compare string using regex or direct access
   input.erase(std::remove(input.begin(), input.end(), '\t'), input.end());
   input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
+  if (input == "") {
+    return true;
+  }
   try {
     // Is regex to match extractInputValue is ok ?
     _extractInputValue(input);
