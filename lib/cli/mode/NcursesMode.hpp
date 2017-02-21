@@ -22,7 +22,7 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
   // ncurses and input attributes
   private:
     bool _readingInput;
-    int _inputCursorIndex;
+    int _inputCmdIndex;
     std::string _inputCmd;
 
   // keyBinding
@@ -30,6 +30,7 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
     typedef std::function<void()> KeyBind;
   private:
     // basic function to add key to buffer and move correctly the cursor
+    void _changeBuffer(const std::string&);
     void _addKeyToBuffer(int);
 
     std::map<int, KeyBind> _cmdMap;
@@ -46,10 +47,18 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
   // history stuff
   private:
     typedef std::vector<std::string> HistoryCmd;
-    int _historyIndex;
     HistoryCmd _history;
 
     void _addToHistory(const std::string&);
+
+    // filter feature on search
+    // really useful when you whant to get back a command fast
+    std::string _historyFilter;
+    int _historyFilterResultIndex;
+    HistoryCmd _historyFilterResult;
+
+    bool _refreshHistoryFilter(const std::string&);
+
 
   // ncurses help
   private:

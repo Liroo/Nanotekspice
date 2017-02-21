@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "NcursesMode.hpp"
 
 // So much work on this input user class
@@ -50,13 +52,14 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
   int inputChar = 0;
 
   // init input
-  _inputCursorIndex = 0;
+  _inputCmdIndex = 0;
   _inputCmd = "";
   _readingInput = true;
 
-  // init history index
-  _historyIndex = _history.size() - 1;
-  if (_historyIndex < 0) { _historyIndex = 0; }
+  // init history filter
+  _historyFilter = "\n"; // init by \n because this is impossible to create a filter with \n
+  _historyFilterResultIndex = 0;
+  _historyFilterResult.clear();
 
   // prompt
   wprintw(_win, CLI_PROMPT);
@@ -83,6 +86,27 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
   return _inputCmd;
 }
 
+void nts::CLI::Mode::NcursesMode::_changeBuffer(const std::string& str) {
+  // move to the begining of the input
+  std::pair<int, int> cursorPosition = _getCursorPosition();
+  _moveCursorPosition(cursorPosition.first - _inputCmdIndex, cursorPosition.second);
+  // rewrite str
+  wprintw(_win, "%s", str.c_str());
+  // and remove extra characters
+  int extraCharToRemove = _inputCmd.size() - str.size();
+  for (; extraCharToRemove >= 0; extraCharToRemove--) {
+    wdelch(_win);
+  }
+  /*
+    move back the cursor position to the inition value
+    We can't use previous position because if the input is multipleline
+    It's not guaranted the cursor will be at the same position
+  */
+  cursorPosition = _getCursorPosition();
+  _moveCursorPosition(cursorPosition.first - (str.size() - _historyFilter.size()), cursorPosition.second);
+  _inputCmd = str;
+}
+
 void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
   // handle printable key which mean this is an char from the command
   // don't add new line to the command
@@ -90,7 +114,7 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
     std::string strInput("");
     const char *printableInput = unctrl(inputChar);
     strInput = printableInput;
-    _inputCmd.insert(_inputCursorIndex, strInput);
+    _inputCmd.insert(_inputCmdIndex, strInput);
     // print the character because of noecho() mode
     for (int i = 0; i < (int)strInput.size(); i++) {
       // insert char at correct position
@@ -106,8 +130,12 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
 }
 
 void nts::CLI::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
-  HistoryCmd::iterator lastCmdInHistory = _history.begin();
+  if (lastCmd == "") { return; }
+  HistoryCmd::iterator lastCmdInHistory = _history.end();
 
+  if (_history.size() > 0) {
+    lastCmdInHistory--;
+  }
   // if last cmd is the same as this one, don't add the cmd to history
   if (lastCmdInHistory != _history.end() && *lastCmdInHistory == lastCmd) {
     return;
@@ -116,33 +144,56 @@ void nts::CLI::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
   _history.push_back(lastCmd);
 }
 
+bool nts::CLI::Mode::NcursesMode::_refreshHistoryFilter(const std::string& historyFilter) {
+  // if filter is the same as before, don't touch the result
+  if (historyFilter == _historyFilter) {
+    return false;
+  }
+  // replace new filter
+  _historyFilter = historyFilter;
+  // create vector of the result of the research
+  _historyFilterResult.clear();
+  std::for_each(_history.begin(), _history.end(),
+    [=](std::string historyItem) -> void {
+      if (historyFilter == "" || historyItem.compare(0, historyFilter.length(), historyFilter) == 0) {
+        _historyFilterResult.push_back(historyItem);
+      }
+    });
+  // push back history filter that we can get it by history and no force use when down is reached
+  _historyFilterResult.push_back(_historyFilter);
+  // set _historyFilterResultIndex to know where we are in the filter
+  // put it at the last position
+  _historyFilterResultIndex = _historyFilterResult.size() - 1;
+  return true;
+}
+
 void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
   // if cursor is already on the first position of the string, return
-  if (_inputCursorIndex < 1) {
+  if (_inputCmdIndex < 1) {
     return;
   }
   std::pair<int, int> cursorPosition = _getCursorPosition();
   if (_moveCursorPosition(cursorPosition.first - 1, cursorPosition.second)) {
-    _inputCursorIndex -= 1;
+    _inputCmdIndex -= 1;
   }
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
   // if cursor is already on the first position of the string, return
-  if (_inputCursorIndex > (int)(_inputCmd.size()) - 1) {
+  if (_inputCmdIndex > (int)(_inputCmd.size()) - 1) {
     return;
   }
   std::pair<int, int> cursorPosition = _getCursorPosition();
   if (_moveCursorPosition(cursorPosition.first + 1, cursorPosition.second)) {
-    _inputCursorIndex += 1;
+    _inputCmdIndex += 1;
   }
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
-  if (_inputCursorIndex < 1) { return; }
+  if (_inputCmdIndex < 1) { return; }
   _handleKeyLeft();
   if (_inputCmd.size() > 0) {
-    _inputCmd.erase(_inputCursorIndex, 1);
+    _inputCmd.erase(_inputCmdIndex, 1);
     /*
       we could use same algorithm to delete a char inside the terminal
       but the way we do things is much slower on multiple lines
@@ -154,7 +205,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
       // save cursor position
       std::pair<int, int> cursorPosition = _getCursorPosition();
       // create a substr to re write all the next input on multiple line
-      std::string subStr = _inputCmd.substr(_inputCursorIndex);
+      std::string subStr = _inputCmd.substr(_inputCmdIndex);
       // write it
       mvwprintw(_win, cursorPosition.second, cursorPosition.first, "%s", subStr.c_str());
       // remove last extra char
@@ -168,21 +219,35 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
-  if (_history.size() == 0) { return; }
-  if (_historyIndex - 1 >= 0) {
-    _historyIndex -= 1;
+  // refresh historyFilter if it change
+  std::string actualFilter = _inputCmd.substr(0, _inputCmdIndex);
+
+  // refresh here the filter if needed
+  _refreshHistoryFilter(actualFilter);
+  // here we want n - 1 item
+  if (_historyFilterResultIndex - 1 >= 0) {
+    _historyFilterResultIndex -= 1;
   }
-  // TODO
-  printw("%s", _history[_historyIndex].c_str());
+  if (_historyFilterResult.empty()) {
+    return;
+  }
+  _changeBuffer(_historyFilterResult[_historyFilterResultIndex]);
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyHistoryBackward() {
-  if (_history.size() == 0) { return; }
-  if (_historyIndex + 1 < (int)_history.size()) {
-    _historyIndex += 1;
+  // refresh historyFilter if it change
+  std::string actualFilter = _inputCmd.substr(0, _inputCmdIndex);
+
+  // refresh here the filter if needed
+  _refreshHistoryFilter(actualFilter);
+  // here we want n + 1 item
+  if (_historyFilterResultIndex + 1 < (int)(_historyFilterResult.size())) {
+    _historyFilterResultIndex += 1;
   }
-  // TODO
-  printw("%s", _history[_historyIndex].c_str());
+  if (_historyFilterResult.empty()) {
+    return;
+  }
+  _changeBuffer(_historyFilterResult[_historyFilterResultIndex]);
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyCtrlD() {
