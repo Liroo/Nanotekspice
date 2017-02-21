@@ -2,6 +2,7 @@
 # define NCURSESMODE_HPP
 
 # include <map>
+# include <vector>
 # include <utility>
 # include "AMode.hpp"
 # include "ncurses.h"
@@ -20,9 +21,9 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
 
   // ncurses and input attributes
   private:
+    bool _readingInput;
     int _inputCursorIndex;
     std::string _inputCmd;
-    WINDOW *_win;
 
   // keyBinding
   public:
@@ -36,14 +37,24 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
     void _handleKeyLeft();
     void _handleKeyRight();
     void _handleKeyDeleteCharacter();
-    void _handleKeyMouseEvent();
     void _handleKeyHistoryForward();
     void _handleKeyHistoryBackward();
+    void _handleKeyCtrlD();
 
     void _handleUnhandledKey();
 
+  // history stuff
+  private:
+    typedef std::vector<std::string> HistoryCmd;
+    int _historyIndex;
+    HistoryCmd _history;
+
+    void _addToHistory(const std::string&);
+
   // ncurses help
   private:
+    WINDOW *_win;
+
     std::pair<int, int> _getCursorPosition();
     bool _moveCursorPosition(int, int);
 };

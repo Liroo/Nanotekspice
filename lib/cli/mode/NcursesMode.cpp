@@ -28,9 +28,9 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
     { (int)(KEY_LEFT), [this]() -> void { this->_handleKeyLeft(); } },
     { (int)(KEY_RIGHT), [this]() -> void { this->_handleKeyRight(); } },
     { (int)(KEY_BACKSPACE), [this]() -> void { this->_handleKeyDeleteCharacter(); } },
-    { (int)(KEY_MOUSE), [this]() -> void { this->_handleKeyMouseEvent(); } },
     { (int)(KEY_UP), [this]() -> void { this->_handleKeyHistoryForward(); } },
     { (int)(KEY_DOWN), [this]() -> void { this->_handleKeyHistoryBackward(); } },
+    { (int)(4), [this]() -> void { this->_handleKeyCtrlD(); } },
 
     // Unhandled keys
     { (int)('\t'), [this]() -> void { this->_handleUnhandledKey(); } },
@@ -52,10 +52,16 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
   // init input
   _inputCursorIndex = 0;
   _inputCmd = "";
+  _readingInput = true;
+
+  // init history index
+  _historyIndex = _history.size() - 1;
+  if (_historyIndex < 0) { _historyIndex = 0; }
+
   // prompt
   wprintw(_win, CLI_PROMPT);
   // loop for read a command until '\n'
-  while (inputChar != KEY_NEWLINE) {
+  while (inputChar != KEY_NEWLINE && _readingInput) {
     // getChar
     inputChar = wgetch(_win);
 
@@ -71,6 +77,9 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
       _addKeyToBuffer(inputChar);
     }
   }
+  // add the last command to the history
+  // a command cannot be in vector two times in a row
+  _addToHistory(_inputCmd);
   return _inputCmd;
 }
 
@@ -94,6 +103,17 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
     *nts::sout << "\n";
     wrefresh(_win);
   }
+}
+
+void nts::CLI::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
+  HistoryCmd::iterator lastCmdInHistory = _history.begin();
+
+  // if last cmd is the same as this one, don't add the cmd to history
+  if (lastCmdInHistory != _history.end() && *lastCmdInHistory == lastCmd) {
+    return;
+  }
+  // add the cmd to history
+  _history.push_back(lastCmd);
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
@@ -147,29 +167,34 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
   }
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyMouseEvent() {
-  // mouse event structure
-  MEVENT event;
-
-  // get mouse specific event to correctly get scroll direction
-  if (getmouse(&event) == OK) {
-    std::bitset<sizeof(event.bstate)> test(event.bstate);
-    printw("%s\n", test.to_string().c_str());
-    if (event.bstate & BUTTON4_PRESSED)
-      wprintw(_win, "Button4\n");
-    else if (event.bstate & BUTTON2_PRESSED)
-      wprintw(_win, "Button2\n");
-  }
-}
-
 void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
+  if (_history.size() == 0) { return; }
+  if (_historyIndex - 1 >= 0) {
+    _historyIndex -= 1;
+  }
   // TODO
-  //wscrl(_win, 1);
+  printw("%s", _history[_historyIndex].c_str());
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyHistoryBackward() {
+  if (_history.size() == 0) { return; }
+  if (_historyIndex + 1 < (int)_history.size()) {
+    _historyIndex += 1;
+  }
   // TODO
-  //wscrl(_win, -1);
+  printw("%s", _history[_historyIndex].c_str());
+}
+
+void nts::CLI::Mode::NcursesMode::_handleKeyCtrlD() {
+  // stop reading input anyway on ctrl-D
+  _readingInput = false;
+  if (_inputCmd.size() == 0) {
+    // if there is no input registered
+    // let's exit
+    _inputCmd = "exit";
+  } else {
+    _addKeyToBuffer('\n');
+  }
 }
 
 void nts::CLI::Mode::NcursesMode::_handleUnhandledKey() {
@@ -188,14 +213,20 @@ std::pair<int, int> nts::CLI::Mode::NcursesMode::_getCursorPosition() {
 bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
   int xNew = 0;
   int yNew = 0;
+
+  // if x < 0, back to the top line
   if (x < 0 && y > 0) {
     yNew = y - 1;
     xNew = COLS - 1;
+  // if x > max COLS, go ahead to next line
   } else if (x > COLS - 1) {
+    // because of the ncurses winsch, the cursor don't move automaticly
+    // I have to add a newline manually to handle the scroll
     if (y == LINES - 1) {
       waddch(_win, '\n');
       yNew = y;
       xNew = 0;
+    // or just go to the next line
     } else {
       yNew = y + 1;
       xNew = 0;
@@ -204,12 +235,24 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
     yNew = y;
     xNew = x;
   }
+  // move the cursor to the position (xNew, yNew)
   if (wmove(_win, yNew, xNew) == ERR) {
     return false;
   }
   return true;
 }
 
+/*
+  Some operator overloading of our output class for NcursesMode
+  the class is extern (a bit like static). The class is accessible from anywhere in the program
+
+  there is actually three operator overload:
+    - std::string
+    - char *
+    - int
+
+  useful to display many type on ncurses ui
+*/
 nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const std::string& str) {
   if (_win) {
     wprintw(_win, "%s", str.c_str());
