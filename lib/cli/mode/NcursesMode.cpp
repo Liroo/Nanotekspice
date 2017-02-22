@@ -32,13 +32,17 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
     // handled keys which all have a different behavior
     { (int)(KEY_LEFT), [this]() -> void { this->_handleKeyLeft(); } },
     { (int)(KEY_RIGHT), [this]() -> void { this->_handleKeyRight(); } },
+    { (int)(KEY_CLEFT), [this]() -> void { this->_handleKeyCtrlLeft(); } },
+    { (int)(KEY_CRIGHT), [this]() -> void { this->_handleKeyCtrlRight(); } },
+    { (int)(KEY_SOH), [this]() -> void { this->_handleKeyCtrlA(); } },
+    { (int)(KEY_ENQ), [this]() -> void { this->_handleKeyCtrlE(); } },
     { (int)(KEY_BACKSPACE), [this]() -> void { this->_handleKeyDeleteCharacter(); } },
     { (int)(KEY_UP), [this]() -> void { this->_handleKeyHistoryForward(); } },
     { (int)(KEY_DOWN), [this]() -> void { this->_handleKeyHistoryBackward(); } },
-    { (int)(4), [this]() -> void { this->_handleKeyCtrlD(); } },
+    { (int)(KEY_EOT), [this]() -> void { this->_handleKeyCtrlD(); } },
 
     // Unhandled keys
-    { (int)('\t'), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_LEFTTAB), [this]() -> void { this->_handleUnhandledKey(); } },
     { (int)(KEY_BREAK), [this]() -> void { this->_handleUnhandledKey(); } },
     { (int)(KEY_HOME), [this]() -> void { this->_handleUnhandledKey(); } },
     { (int)(KEY_F0), [this]() -> void { this->_handleUnhandledKey(); } },
@@ -104,6 +108,9 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   _inputCmd = "";
   nts::sout = new nts::CLI::Mode::NcursesOut(_win);
   nts::serr = nts::sout;
+  // separator used for ctrl + left/right keys
+  // use to find next step where cursor should stop
+  _moveSeparator = { ' ', '=' };
 }
 
 nts::CLI::Mode::NcursesMode::~NcursesMode() {
@@ -131,6 +138,11 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
   while (inputChar != KEY_NEWLINE && _readingInput) {
     // getChar
     inputChar = wgetch(_win);
+
+    /*
+      DEBUG Mode
+    */
+    //*nts::sout << inputChar << "\n";
 
     try {
       // is the input key is mapped with special function ?
@@ -193,12 +205,27 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
     const char *printableInput = unctrl(inputChar);
     strInput = printableInput;
     _inputCmd.insert(_inputCmdIndex, strInput);
-    // print the character because of noecho() mode
-    for (int i = 0; i < (int)strInput.size(); i++) {
-      // insert char at correct position
-      winsch(_win, strInput[i]);
-      // then move the cursor to the right as a real cmd interpretor
-      _handleKeyRight();
+
+    if ((int)_inputCmd.size() > COLS - CLI_PROMPT_SIZE - (int)strInput.size() + 1) {
+      // create a substr to re write all the next input on multiple line
+      std::string subStr = _inputCmd.substr(_inputCmdIndex);
+      // write it
+      wprintw(_win, "%s", subStr.c_str());
+
+      // save cursor position
+      std::pair<int, int> cursorPosition = _getCursorPosition();
+      // move cursor to last position
+      if (_moveCursorPosition(cursorPosition.first - subStr.size() + strInput.size(), cursorPosition.second)) {
+        _inputCmdIndex += strInput.size();
+      }
+    } else {
+      // print the character because of noecho() mode
+      for (int i = 0; i < (int)strInput.size(); i++) {
+        // insert char at correct position
+        winsch(_win, strInput[i]);
+        // then move the cursor to the right as a real cmd interpretor
+        _handleKeyRight();
+      }
     }
   } else {
     // print \n and refresh / flush the window
@@ -276,6 +303,72 @@ void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
   _blockRefreshHistory = false;
 }
 
+void nts::CLI::Mode::NcursesMode::_handleKeyCtrlLeft() {
+  int leftShifted = _inputCmdIndex;
+
+  // pass throught all separator currently on
+  while (leftShifted > 0 && _moveSeparator.find(_inputCmd[leftShifted]) != _moveSeparator.end()) {
+    leftShifted--;
+  }
+
+  // loop until a moveSeparator is reached or line start
+  while (leftShifted > 0 && _moveSeparator.find(_inputCmd[leftShifted]) == _moveSeparator.end()) {
+    leftShifted--;
+  }
+  // calculate the difference
+  leftShifted = _inputCmdIndex - leftShifted;
+
+  // move correcty the cursor
+  std::pair<int, int> cursorPosition = _getCursorPosition();
+  if (_moveCursorPosition(cursorPosition.first - leftShifted, cursorPosition.second)) {
+    _inputCmdIndex -= leftShifted;
+  }
+
+  // unblock refresh history
+  _blockRefreshHistory = false;
+}
+
+void nts::CLI::Mode::NcursesMode::_handleKeyCtrlRight() {
+  int leftShifted = _inputCmdIndex;
+
+  // pass throught all separator currently on
+  while (leftShifted < (int)_inputCmd.size() && _moveSeparator.find(_inputCmd[leftShifted]) != _moveSeparator.end()) {
+    leftShifted++;
+  }
+
+  // loop until a moveSeparator is reached or line start
+  while (leftShifted < (int)_inputCmd.size() && _moveSeparator.find(_inputCmd[leftShifted]) == _moveSeparator.end()) {
+    leftShifted++;
+  }
+  // calculate the difference
+  leftShifted -= _inputCmdIndex;
+
+  // move correcty the cursor
+  std::pair<int, int> cursorPosition = _getCursorPosition();
+  if (_moveCursorPosition(cursorPosition.first + leftShifted, cursorPosition.second)) {
+    _inputCmdIndex += leftShifted;
+  }
+
+  // unblock refresh history
+  _blockRefreshHistory = false;
+}
+
+void nts::CLI::Mode::NcursesMode::_handleKeyCtrlA() {
+  // move correcty the cursor at first position
+  std::pair<int, int> cursorPosition = _getCursorPosition();
+  if (_moveCursorPosition(cursorPosition.first - _inputCmdIndex, cursorPosition.second)) {
+    _inputCmdIndex = 0;
+  }
+}
+
+void nts::CLI::Mode::NcursesMode::_handleKeyCtrlE() {
+  // move correcty the cursor at last position
+  std::pair<int, int> cursorPosition = _getCursorPosition();
+  if (_moveCursorPosition(cursorPosition.first + (_inputCmd.size() - _inputCmdIndex), cursorPosition.second)) {
+    _inputCmdIndex = _inputCmd.size();
+  }
+}
+
 void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
   if (_inputCmdIndex < 1) {
     return;
@@ -291,16 +384,16 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
       it's O(N) speed on multiple lines where is O(1) on single
     */
     if ((int)_inputCmd.size() > COLS - CLI_PROMPT_SIZE - 1) {
-      // save cursor position
-      std::pair<int, int> cursorPosition = _getCursorPosition();
       // create a substr to re write all the next input on multiple line
       std::string subStr = _inputCmd.substr(_inputCmdIndex);
       // write it
-      mvwprintw(_win, cursorPosition.second, cursorPosition.first, "%s", subStr.c_str());
+      wprintw(_win, "%s", subStr.c_str());
       // remove last extra char
       wdelch(_win);
+      // save cursor position
+      std::pair<int, int> cursorPosition = _getCursorPosition();
       // move cursor to last position
-      wmove(_win, cursorPosition.second, cursorPosition.first);
+      _moveCursorPosition(cursorPosition.first - subStr.size(), cursorPosition.second);
     } else {
       wdelch(_win);
     }

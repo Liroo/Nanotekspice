@@ -3,12 +3,22 @@
 
 # include <map>
 # include <vector>
+# include <unordered_set>
 # include <utility>
 # include "AMode.hpp"
 # include "ncurses.h"
 
-// Extension of ncurses to know if inputChar is newline
+// this implementation is not really cross platform/terminal but it handle what I want to handle
+
+// Extension of ncurses key
+# define KEY_SOH 1
+# define KEY_EOT 4
+# define KEY_ENQ 5
+# define KEY_LEFTTAB 9
 # define KEY_NEWLINE 10
+// ctr left and ctr right is not supported on all terminal
+# define KEY_CLEFT 545
+# define KEY_CRIGHT 560
 
 class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
   public:
@@ -25,6 +35,8 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
     int _inputCmdIndex;
     std::string _inputCmd;
 
+    std::unordered_set<char> _moveSeparator;
+
   // keyBinding
   public:
     typedef std::function<void()> KeyBind;
@@ -37,6 +49,10 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
 
     void _handleKeyLeft();
     void _handleKeyRight();
+    void _handleKeyCtrlLeft();
+    void _handleKeyCtrlRight();
+    void _handleKeyCtrlA();
+    void _handleKeyCtrlE();
     void _handleKeyDeleteCharacter();
     void _handleKeyHistoryForward();
     void _handleKeyHistoryBackward();
