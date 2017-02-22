@@ -30,14 +30,14 @@ OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 
 # General behavior of nanotekspice
 
-NAME_GEN = nanotekspice
+NAME_BIN = nanotekspice
 
-SRC_BINDIR = bin/
-OBJ_BINDIR = $(OBJ_DIR)bin/
+SRC_GENDIR = src/
+OBJ_GENDIR = $(OBJ_DIR)src/
 
-SRC_BIN = main.cpp
+SRC_GEN = main.cpp
 
-OBJ_BIN = $(addprefix $(OBJ_BINDIR), $(SRC_BIN:.cpp=.o))
+OBJ_GEN = $(addprefix $(OBJ_GENDIR), $(SRC_GEN:.cpp=.o))
 
 # Utility
 
@@ -59,13 +59,13 @@ RM		= rm -rf
 # Rules
 
 all:
-	@make --no-print-directory $(NAME_LIB) $(NAME_GEN)
+	@make --no-print-directory $(NAME_LIB) $(NAME_BIN)
 
 $(OBJ_LIBDIR)%.o: $(SRC_LIBDIR)%.cpp
 	@mkdir -p $(dir $@)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-$(OBJ_BINDIR)%.o: $(SRC_BINDIR)%.cpp
+$(OBJ_GENDIR)%.o: $(SRC_GENDIR)%.cpp
 	@mkdir -p $(dir $@)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
@@ -73,14 +73,14 @@ $(NAME_LIB): $(OBJ_LIB)
 	$(AR) $(NAME_LIB) $(OBJ_LIB)
 	$(RANLIB) $(NAME_LIB)
 
-$(NAME_GEN): $(NAME_LIB) $(OBJ_BIN)
-	$(CC) -o $(NAME_GEN) $(OBJ_BIN) $(LDFLAGS)
+$(NAME_BIN): $(NAME_LIB) $(OBJ_GEN)
+	$(CC) -o $(NAME_BIN) $(OBJ_GEN) $(LDFLAGS)
 
 clean:
 	$(RM) $(OBJ_DIR)
 
 fclean:	clean
-	$(RM) $(NAME_GEN) $(NAME_LIB)
+	$(RM) $(NAME_BIN) $(NAME_LIB)
 
 re: fclean all
 
