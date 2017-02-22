@@ -9,7 +9,7 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
     throw nts::Exception::CLIException(ECLINCURSESINIT);
   }
   /*
-    zsh doc:
+    zsh doc:z
     We use cbreak mode because we don't want line buffering
     on input since we'd just need to loop over characters.
     We use noecho since the manual says that's the right
@@ -20,8 +20,6 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   cbreak();
   noecho();
   keypad(_win, true);
-  mouseinterval(0);
-  mousemask(BUTTON1_CLICKED | BUTTON4_PRESSED | BUTTON2_PRESSED, NULL);
   // this line made many things <3
   scrollok(_win, true);
 
@@ -125,6 +123,7 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
   _historyFilter = "\n"; // init by \n because this is impossible to create a filter with \n
   _historyFilterResultIndex = 0;
   _historyFilterResult.clear();
+  _blockRefreshHistory = false;
 
   // prompt
   wprintw(_win, CLI_PROMPT);
@@ -162,14 +161,28 @@ void nts::CLI::Mode::NcursesMode::_changeBuffer(const std::string& str) {
   for (; extraCharToRemove >= 0; extraCharToRemove--) {
     wdelch(_win);
   }
+  // assign buffer to cmd in our class
+  _inputCmd = str;
+  _inputCmdIndex = str.size();
   /*
     move back the cursor position to the inition value
     We can't use previous position because if the input is multipleline
     It's not guaranted the cursor will be at the same position
   */
-  cursorPosition = _getCursorPosition();
-  _moveCursorPosition(cursorPosition.first - (str.size() - _historyFilter.size()), cursorPosition.second);
-  _inputCmd = str;
+  /*
+    don't necessary use it
+    old version, keep a trace of this if we need it
+  */
+
+  // cursorPosition = _getCursorPosition();
+  // _moveCursorPosition(cursorPosition.first - (str.size() - _historyFilter.size()), cursorPosition.second);
+  // _inputCmd = str;
+
+  /*
+    instead of the old version
+    we need to force block refresh history
+  */
+  _blockRefreshHistory = true;
 }
 
 void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
@@ -195,6 +208,8 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
     *nts::sout << "\n";
     wrefresh(_win);
   }
+  // unblock refresh history
+  _blockRefreshHistory = false;
 }
 
 void nts::CLI::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
@@ -244,6 +259,8 @@ void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
   if (_moveCursorPosition(cursorPosition.first - 1, cursorPosition.second)) {
     _inputCmdIndex -= 1;
   }
+  // unblock refresh history
+  _blockRefreshHistory = false;
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
@@ -255,10 +272,14 @@ void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
   if (_moveCursorPosition(cursorPosition.first + 1, cursorPosition.second)) {
     _inputCmdIndex += 1;
   }
+  // unblock refresh history
+  _blockRefreshHistory = false;
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
-  if (_inputCmdIndex < 1) { return; }
+  if (_inputCmdIndex < 1) {
+    return;
+  }
   _handleKeyLeft();
   if (_inputCmd.size() > 0) {
     _inputCmd.erase(_inputCmdIndex, 1);
@@ -284,6 +305,8 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
       wdelch(_win);
     }
   }
+  // unblock refresh history
+  _blockRefreshHistory = false;
 }
 
 void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
@@ -291,7 +314,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
   std::string actualFilter = _inputCmd.substr(0, _inputCmdIndex);
 
   // refresh here the filter if needed
-  _refreshHistoryFilter(actualFilter);
+  !_blockRefreshHistory && _refreshHistoryFilter(actualFilter);
   // here we want n - 1 item
   if (_historyFilterResultIndex - 1 >= 0) {
     _historyFilterResultIndex -= 1;
@@ -307,7 +330,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyHistoryBackward() {
   std::string actualFilter = _inputCmd.substr(0, _inputCmdIndex);
 
   // refresh here the filter if needed
-  _refreshHistoryFilter(actualFilter);
+  !_blockRefreshHistory && _refreshHistoryFilter(actualFilter);
   // here we want n + 1 item
   if (_historyFilterResultIndex + 1 < (int)(_historyFilterResult.size())) {
     _historyFilterResultIndex += 1;

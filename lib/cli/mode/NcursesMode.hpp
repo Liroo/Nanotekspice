@@ -57,8 +57,10 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
     int _historyFilterResultIndex;
     HistoryCmd _historyFilterResult;
 
-    bool _refreshHistoryFilter(const std::string&);
+    // block refresh of the history if needed
+    bool _blockRefreshHistory;
 
+    bool _refreshHistoryFilter(const std::string&);
 
   // ncurses help
   private:
