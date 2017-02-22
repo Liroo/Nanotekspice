@@ -25,6 +25,11 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   // this line made many things <3
   scrollok(_win, true);
 
+  /*
+    map some keys and ctrl and shifted keys
+    there is much unhandled keys noted here
+    but there is many more printable keys... !
+  */
   _cmdMap = {
     // handled keys which all have a different behavior
     { (int)(KEY_LEFT), [this]() -> void { this->_handleKeyLeft(); } },
@@ -36,6 +41,66 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
 
     // Unhandled keys
     { (int)('\t'), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_BREAK), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_HOME), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_F0), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_EIC), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_CLEAR), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_NPAGE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_PPAGE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_STAB), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_PRINT), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_LL), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_A1), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_A3), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_B2), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_C1), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_C3), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_BTAB), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_COPY), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_FIND), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_MOUSE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_REDO), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_REFRESH), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_RESIZE), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_SAVE), [this]() -> void { this->_handleUnhandledKey(); } },
+
+    { (int)(KEY_SBEG), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SCANCEL), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SCOMMAND), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SCOPY), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SCREATE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SDC), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SDL), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SELECT), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SEND), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SEOL), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SEXIT), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SFIND), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SHELP), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SHOME), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SIC), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SLEFT), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SMESSAGE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SMOVE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SNEXT), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SOPTIONS), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SPREVIOUS), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SPRINT), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SREDO), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SREPLACE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SRIGHT), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SSAVE), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SSUSPEND), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_SUNDO), [this]() -> void { this->_handleUnhandledKey(); } },
+    { (int)(KEY_UNDO), [this]() -> void { this->_handleUnhandledKey(); } },
   };
   // init some attributes
   _inputCmd = "";
@@ -124,6 +189,9 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
     }
   } else {
     // print \n and refresh / flush the window
+    // move to the end of the input
+    std::pair<int, int> cursorPosition = _getCursorPosition();
+    _moveCursorPosition(cursorPosition.first + (_inputCmd.size() - _inputCmdIndex), cursorPosition.second);
     *nts::sout << "\n";
     wrefresh(_win);
   }
@@ -159,8 +227,8 @@ bool nts::CLI::Mode::NcursesMode::_refreshHistoryFilter(const std::string& histo
         _historyFilterResult.push_back(historyItem);
       }
     });
-  // push back history filter that we can get it by history and no force use when down is reached
-  _historyFilterResult.push_back(_historyFilter);
+  // push back history cmd that we can get it by history and no force use when down is reached
+  _historyFilterResult.push_back(_inputCmd);
   // set _historyFilterResultIndex to know where we are in the filter
   // put it at the last position
   _historyFilterResultIndex = _historyFilterResult.size() - 1;
@@ -281,8 +349,8 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
 
   // if x < 0, back to the top line
   if (x < 0 && y > 0) {
-    yNew = y - 1;
-    xNew = COLS - 1;
+    yNew = y - (((-x) / COLS) + 1);
+    xNew = COLS - ((-x) % COLS);
   // if x > max COLS, go ahead to next line
   } else if (x > COLS - 1) {
     // because of the ncurses winsch, the cursor don't move automaticly
@@ -293,8 +361,8 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
       xNew = 0;
     // or just go to the next line
     } else {
-      yNew = y + 1;
-      xNew = 0;
+      yNew = y + (x / COLS);
+      xNew = x % COLS;
     }
   } else {
     yNew = y;
