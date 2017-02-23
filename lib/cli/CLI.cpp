@@ -145,9 +145,15 @@ bool nts::CLI::_execCmd() {
     If not, continue
   */
   bool isInputModifier = true;
-  // remove whitespace and tabulation so we should be able to compare string using regex or direct access
-  input.erase(std::remove(input.begin(), input.end(), '\t'), input.end());
-  input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
+  // trim whitespace left, right and double in
+  input.erase(std::find_if(input.rbegin(), input.rend(),
+    std::not1(std::ptr_fun<int, int>(std::isspace))).base(), input.end());
+  input.erase(input.begin(), std::find_if(input.begin(), input.end(),
+    std::not1(std::ptr_fun<int, int>(std::isspace))));
+  std::string::iterator new_end = std::unique(input.begin(), input.end(),
+    [](char lhs, char rhs) -> bool { return (lhs == rhs) && (lhs == ' '); });
+  input.erase(new_end, input.end());
+
   if (input == "") {
     return true;
   }
