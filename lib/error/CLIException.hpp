@@ -7,6 +7,7 @@
 # define ECLIACCESS "no such regular file"
 # define ECLIBADSYNTAX "bad syntax"
 # define ECLIUNKNOWOPT "unknown option"
+# define ECLIARGNOTFOUND "variable not found"
 
 # define ECLINCURSESINIT "ncurses failed to init, switch to basic mode"
 

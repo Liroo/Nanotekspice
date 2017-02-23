@@ -8,4 +8,4 @@ output x
 clock c
 
 .links:
-x:1 x:1
+c:1 x:1

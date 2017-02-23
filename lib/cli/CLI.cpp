@@ -129,7 +129,12 @@ int nts::CLI::startCLI() {
      return 1;
    }
    _comps = _parser.getComponentsMap();
-   simulate();
+   try {
+     simulate();
+   } catch (const nts::Exception::BaseException &e) {
+     *nts::serr << e.what() << "\n";
+     return 1;
+   }
 
   // loop reading command
   while (_execCmd()) {}
@@ -174,13 +179,18 @@ bool nts::CLI::_execCmd() {
     // is cmd referenced in out dictionary of cmd ?
     // if not, exception is throw
     cmd = _cmd.at(input);
+    // cmd is found, so let's try to run it and return him :)
+    bool cmdReturn = true;
+
+    try {
+      cmdReturn = cmd();
+    } catch (const nts::Exception::BaseException &e) {
+      *nts::serr << e.what() << "\n";
+    }
+    return cmdReturn;
   } catch (const std::out_of_range&) {
     // cmd not found, ask user to type help
     *nts::sout << input << ": " << CLI_CMD_NOT_FOUND << "\n";
-  }
-  // cmd is found, so let's try to run it and return him :)
-  if ((bool)cmd) {
-    return cmd();
   }
   return true;
 }
@@ -306,6 +316,16 @@ void nts::CLI::_extractInputValue(const std::string &arg) {
   // If there is no 3 arguments (every group, input name, input value = 0 | 1), throw an error
   if (matched.size() != 3) {
     throw nts::Exception::CLIException(arg + ": " + ECLIBADSYNTAX);
+  }
+
+  // Check if input exist
+  if (!_comps.empty()) {
+    std::map<std::string, nts::IComponent *>::iterator inputFound = _comps.find(matched[1]);
+    if (inputFound == _comps.end() || ((*inputFound).second->getType() != "input" &&
+      (*inputFound).second->getType() != "clock")) {
+      *nts::sout << std::string(matched[1]) << ": " << ECLIARGNOTFOUND << "\n";
+      return;
+    }
   }
 
   /*
