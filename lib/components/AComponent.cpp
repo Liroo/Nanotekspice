@@ -69,29 +69,26 @@ void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
 
-  //  Check if pin exists
-  if ((int)pin_num_this > _realPins || (int)pin_num_this <= 0 ||
-      (int)pin_num_target > component.sizePins() || (int)pin_num_target <= 0) {
-    throw nts::Exception::ComponentException(std::cerr, EPINNOEXISTS);
-  }
   std::function<void(nts::Pin *, nts::Pin *)> checkLink =
   [](nts::Pin *pin_this, nts::Pin *pin_target)->void {
     nts::pinConf typePin1, typePin2;
 
+    //  Check if pins exists
+    if (!pin_this || !pin_target) {
+      throw nts::Exception::ComponentException(std::cerr, EPINNOEXISTS);
+    }
     typePin1 = pin_this->getType();
     typePin2 = pin_target->getType();
-    if ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT) ||
+    if ((typePin1 != nts::pinConf::FAKE && typePin2 != nts::pinConf::FAKE) &&
+        ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT) ||
         (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK) ||
-        (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT)) {
-          std::cout << " et pin " << pin_this->getID() << "\n";
-            std::cout << " et pin " << pin_target->getID() << "\n";
-          std::cout << typePin1 << " != " << typePin2 << "\n";
+        (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT))) {
       throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
     }
   };
+  //  Check linkage error
   checkLink(_pins[pin_num_this], (component.getPins())[pin_num_target]);
   checkLink((component.getPins())[pin_num_target], _pins[pin_num_this]);
-  //  Check linkage error
   // links first component's pin to second one's pin, and second way
   _pins[pin_num_this]->setComp(&component, pin_num_target);
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);

@@ -9,7 +9,8 @@ nts::C4008::C4008(const std::string &name) : AComponent(name, 16) {
     nts::pinConf::INPUT,
     nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT,
     nts::pinConf::INPUT,
-    nts::pinConf::NOLINK
+    nts::pinConf::NOLINK,
+    nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE
   }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
   _pins[8]->setComputed(nts::Tristate::UNDEFINED);
