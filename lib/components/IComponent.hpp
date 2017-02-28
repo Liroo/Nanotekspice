@@ -7,6 +7,13 @@ namespace nts {
     TRUE = true,
     FALSE = false
   };
+  enum pinConf {
+    NOLINK = -1,
+    INPUT,
+    CLOCK,
+    OUTPUT,
+    FAKE
+  };
   class IComponent;
 };
 
@@ -44,6 +51,7 @@ class nts::IComponent {
 
   public:
     virtual void resetPins() const = 0;
+    virtual int sizePins() const = 0;
 };
 
 #endif /* ICOMPONENT_HPP */

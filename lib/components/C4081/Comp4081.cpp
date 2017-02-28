@@ -2,7 +2,15 @@
 
 nts::C4081::C4081(const std::string &name) : AComponent(name, 14) {
   _type = "4081";
-  this->initPins(14);
+  this->initPins(14, std::vector<nts::pinConf>({
+    nts::pinConf::NOLINK, // None
+    nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::OUTPUT, nts::pinConf::INPUT, nts::pinConf::INPUT,
+    nts::pinConf::NOLINK, // Alim
+    nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::OUTPUT, nts::pinConf::INPUT, nts::pinConf::INPUT,
+    nts::pinConf::NOLINK // Alim
+  }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
   _pins[7]->setComputed(nts::Tristate::UNDEFINED);
   _pins[14]->setComputed(nts::Tristate::UNDEFINED);

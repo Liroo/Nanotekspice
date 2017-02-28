@@ -24,11 +24,14 @@ nts::AComponent::AComponent(const std::string &name, const int &realPins) : _rea
 }
 
 void nts::AComponent::initPins(const int &size,
-                              const nts::Tristate &state) {
+                              const std::vector<nts::pinConf> &pinsConf,
+                              const nts::Tristate &state)
+{
   int i = 1;
 
   while (i <= size) {
     _pins[i] = new Pin(i, state);
+    _pins[i]->setType(pinsConf[i]);
     i++;
   }
 }
@@ -55,25 +58,32 @@ void nts::AComponent::resetPins() const {
     if (pair.second->getComputed() != nts::Tristate::UNDEFINED) {
       (pair.second)->setComputed(nts::Tristate::FALSE);
     }
-    /* TODO Check if needed
-    nts::IComponent *linked = (pair.second)->getLinkedComp();
-    if (linked && !std::regex_match(linked->getType(), std::regex(REG_INPUTTYPE))) {
-      (pair.second)->setState(nts::Tristate::FALSE);
-    } */
   });
+}
+
+int nts::AComponent::sizePins() const {
+  return _realPins;
 }
 
 void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
-  // check logical links error, throw if needed TODO
-  // maybe lexem in Pin class to check which types can be linked ?
 
-  // invalid pin
-  // variable output on pin input
-  // variable input on pin output
-  // pin input - pin input || pin output - pin output
+  static std::vector<std::string> typesLexem = { "^(?:input|true|false)$", "^clock$", "^output$" };
+  nts::pinConf typePin1, typePin2;
 
+  //  Check if pin exists
+  if ((int)pin_num_this > _realPins || (int)pin_num_this <= 0 ||
+      (int)pin_num_target > component.sizePins() || (int)pin_num_target <= 0) {
+    throw nts::Exception::ComponentException(std::cerr, EPINNOEXISTS);
+  }
+  //  Check linkage error
+  typePin1 = _pins[pin_num_this]->getType();
+  typePin2 = (component.getPins())[pin_num_target]->getType();
+  if (!std::regex_match(component.getType(), std::regex(typesLexem[(int)typePin1])) ||
+      !std::regex_match(_type, std::regex(typesLexem[(int)typePin2]))) {
+    throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
+  }
   // links first component's pin to second one's pin, and second way
   _pins[pin_num_this]->setComp(&component, pin_num_target);
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
@@ -98,11 +108,9 @@ void nts::AComponent::Dump() const {
 
 nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
 
-  std::cout << "compute: " << this->getName() << ": pin: " << pin_num_this << std::endl;
-
   // if pin is connected to an input-type (true, false, input, clock),
   // or if it has already been computed, return its state
-  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPE)) ||
+  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPES)) ||
       _pins[pin_num_this]->getComputed() == nts::Tristate::TRUE) {
     _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
     return _pins[pin_num_this]->getState();
@@ -121,6 +129,7 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
     [](nts::Pin *pinInput) {
       nts::IComponent *linkedComp = pinInput->getLinkedComp();
       nts::Pin *linkedPin = pinInput->getLinkedPin();
+
       if (linkedComp) { pinInput->setState(linkedComp->Compute(linkedPin->getID())); }
     };
 

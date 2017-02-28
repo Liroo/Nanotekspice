@@ -2,7 +2,17 @@
 
 nts::C4069::C4069(const std::string &name) : AComponent(name, 14) {
   _type = "4069";
-  this->initPins(14);
+  this->initPins(14, std::vector<nts::pinConf>({
+    nts::pinConf::NOLINK, // None
+    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::NOLINK,
+    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::NOLINK // Alim
+  }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
   _pins[7]->setComputed(nts::Tristate::UNDEFINED);
   _pins[14]->setComputed(nts::Tristate::UNDEFINED);

@@ -2,7 +2,15 @@
 
 nts::C4017::C4017(const std::string &name) : AComponent(name, 14) {
   _type = "4017";
-  this->initPins(16);
+  this->initPins(16, std::vector<nts::pinConf>({
+    nts::pinConf::NOLINK, // None
+    nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::NOLINK, // Alim,
+    nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT, nts::pinConf::CLOCK, nts::pinConf::INPUT,
+    nts::pinConf::NOLINK, // Alim
+    nts::pinConf::FAKE, nts::pinConf::FAKE
+  }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
   _pins[8]->setComputed(nts::Tristate::UNDEFINED);
   _pins[16]->setComputed(nts::Tristate::UNDEFINED);

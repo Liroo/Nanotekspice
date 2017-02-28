@@ -45,6 +45,8 @@ class nts::Pin {
     nts::FlowChart *getGate() const;
     void setComputed(const nts::Tristate &);
     nts::Tristate getComputed() const;
+    void setType(const nts::pinConf &);
+    nts::pinConf getType() const;
 
   private:
     FlowChart *_gate;
@@ -53,6 +55,7 @@ class nts::Pin {
     Tristate _state;
     int _id;
     Tristate _computed;
+    nts::pinConf _type;
 };
 
 typedef std::function<void(const nts::FlowChart *)> gateFn_t;

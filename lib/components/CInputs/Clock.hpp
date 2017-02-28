@@ -13,6 +13,7 @@ class nts::Clock : public nts::AComponent {
     virtual ~Clock() {};
     virtual bool isRising() const;
     virtual void uploadRising();
+
   private:
     bool _rising;
 };

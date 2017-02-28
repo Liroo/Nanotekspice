@@ -26,6 +26,14 @@ void nts::Pin::setState(const nts::Tristate &newState) {
   _state = newState;
 }
 
+void nts::Pin::setType(const nts::pinConf &type) {
+  _type = type;
+}
+
+ nts::pinConf nts::Pin::getType() const {
+   return _type;
+}
+
 void nts::Pin::setComputed(const nts::Tristate &computed) {
   _computed = computed;
 }

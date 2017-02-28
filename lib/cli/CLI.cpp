@@ -255,7 +255,7 @@ bool nts::CLI::simulate() {
         };
 
   if (!_isDirty()) {
-      std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
+    std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
     return true;
   }
 
@@ -265,9 +265,9 @@ bool nts::CLI::simulate() {
       (comp.second)->resetPins();
   });
 
+  //  compute components
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp) {
-
     std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
 
     std::for_each(gates.begin(), gates.end(),
@@ -276,7 +276,6 @@ bool nts::CLI::simulate() {
 
       (comp.second)->Compute((*outPins)[0]->getID());
     });
-
   });
 
   std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);

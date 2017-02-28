@@ -2,7 +2,15 @@
 
 nts::C4094::C4094(const std::string &name) : AComponent(name, 16) {
   _type = "4094";
-  this->initPins(16);
+  this->initPins(16, std::vector<nts::pinConf>({
+    nts::pinConf::NOLINK, // None
+    nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::CLOCK,
+    nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::NOLINK,
+    nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT,
+    nts::pinConf::NOLINK // Alim
+  }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
   _pins[8]->setComputed(nts::Tristate::UNDEFINED);
   _pins[16]->setComputed(nts::Tristate::UNDEFINED);
