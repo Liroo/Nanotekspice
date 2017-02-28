@@ -42,6 +42,13 @@ class nts::AComponent : public nts::IComponent {
     static IComponent *create4008(const std::string &value);
     static IComponent *create4011(const std::string &value);
     static IComponent *create4013(const std::string &value);
+    static IComponent *create4017(const std::string &value);
+    static IComponent *create4030(const std::string &value);
+    static IComponent *create4040(const std::string &value);
+    static IComponent *create4069(const std::string &value);
+    static IComponent *create4071(const std::string &value);
+    static IComponent *create4081(const std::string &value);
+    static IComponent *create4094(const std::string &value);
     static IComponent *createInput(const std::string &value);
     static IComponent *createClock(const std::string &value);
     static IComponent *createTrue(const std::string &value);
@@ -65,6 +72,13 @@ class nts::AComponent : public nts::IComponent {
 # include "Comp4008.hpp"
 # include "Comp4011.hpp"
 # include "Comp4013.hpp"
+# include "Comp4017.hpp"
+# include "Comp4030.hpp"
+# include "Comp4040.hpp"
+# include "Comp4069.hpp"
+# include "Comp4071.hpp"
+# include "Comp4081.hpp"
+# include "Comp4094.hpp"
 # include "Input.hpp"
 # include "Clock.hpp"
 # include "True.hpp"

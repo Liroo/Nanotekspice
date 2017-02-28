@@ -254,13 +254,11 @@ bool nts::CLI::simulate() {
           }
         };
 
-  // TODO Doc
   if (!_isDirty()) {
       std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
     return true;
   }
 
-  // TODO edit clock
   // reset pins compute security
   std::for_each(_comps.begin(), _comps.end(),
     [](std::pair<std::string, nts::IComponent *> comp) {
@@ -269,7 +267,6 @@ bool nts::CLI::simulate() {
 
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp) {
-    *nts::sout << "Simulate on comp " << (comp.second)->getName() << "\n";
 
     std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
 
@@ -277,7 +274,6 @@ bool nts::CLI::simulate() {
     [&comp](const nts::FlowChart *gate) {
       std::vector<nts::Pin *> *outPins = gate->getOutputs();
 
-      *nts::sout << "compute pin id " << (*outPins)[0]->getID() << "\n";
       (comp.second)->Compute((*outPins)[0]->getID());
     });
 
@@ -289,7 +285,7 @@ bool nts::CLI::simulate() {
 }
 
 bool nts::CLI::loop() {
-  // Should loop simulate :)
+  // Should loop simulate :) TODO
   *nts::sout << "loop" << "\n";
 
   return true;

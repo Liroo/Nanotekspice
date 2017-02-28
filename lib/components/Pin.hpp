@@ -17,7 +17,10 @@ namespace nts {
     XOR,
     BITSADDER,
     FLIPFLOP,
-    TENBITSJOHNSONDECADE
+    TENBITSJOHNSONDECADE,
+    TWELVEBITSCOUNTER,
+    NOT,
+    EIGHTBITSSHIFTER
   };
   class Pin;
   class FlowChart;
@@ -70,6 +73,9 @@ class nts::FlowChart {
     static void bitsAdder(const nts::FlowChart *);
     static void flipFlop(const nts::FlowChart *);
     static void tenBitsJohnsonDecade(const nts::FlowChart *gate);
+    static void twelveBitsCounter(const nts::FlowChart *gate);
+    static void NOT(const nts::FlowChart *gate);
+    static void eightBitsShifter(const nts::FlowChart *gate);
     static std::map<GateType, gateFn_t> _gateFn;
 
   public:

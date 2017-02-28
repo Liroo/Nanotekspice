@@ -15,7 +15,6 @@ class nts::Clock : public nts::AComponent {
     virtual void uploadRising();
   private:
     bool _rising;
-    bool _last;
 };
 
 #endif /* CLOCK_HPP */

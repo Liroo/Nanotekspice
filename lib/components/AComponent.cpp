@@ -3,6 +3,15 @@
 std::map<std::string, createFn_t> nts::AComponent::_fn = {
   { "4001", &nts::AComponent::create4001 },
   { "4008", &nts::AComponent::create4008 },
+  { "4011", &nts::AComponent::create4011 },
+  { "4013", &nts::AComponent::create4013 },
+  { "4017", &nts::AComponent::create4017 },
+  { "4030", &nts::AComponent::create4030 },
+  { "4040", &nts::AComponent::create4040 },
+  { "4069", &nts::AComponent::create4069 },
+  { "4071", &nts::AComponent::create4071 },
+  { "4081", &nts::AComponent::create4081 },
+  { "4094", &nts::AComponent::create4094 },
   { "input", &nts::AComponent::createInput },
   { "clock", &nts::AComponent::createClock },
   { "true", &nts::AComponent::createTrue },
@@ -140,6 +149,34 @@ nts::IComponent *nts::AComponent::create4011(const std::string &value) {
 
 nts::IComponent *nts::AComponent::create4013(const std::string &value) {
   return reinterpret_cast<nts::IComponent *>(new nts::C4013(value));
+}
+
+nts::IComponent *nts::AComponent::create4017(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4017(value));
+}
+
+nts::IComponent *nts::AComponent::create4030(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4030(value));
+}
+
+nts::IComponent *nts::AComponent::create4040(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4040(value));
+}
+
+nts::IComponent *nts::AComponent::create4069(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4069(value));
+}
+
+nts::IComponent *nts::AComponent::create4071(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4071(value));
+}
+
+nts::IComponent *nts::AComponent::create4081(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4081(value));
+}
+
+nts::IComponent *nts::AComponent::create4094(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4094(value));
 }
 
 nts::IComponent *nts::AComponent::createInput(const std::string &value) {
