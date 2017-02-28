@@ -12,6 +12,7 @@ namespace nts {
 typedef std::function<nts::IComponent *(const std::string &)> createFn_t;
 
 # define REG_INPUTTYPES "^(?:input|clock|true|false)$"
+# define REG_STANDARDTYPES "^(?:input|clock|true|false|output)$"
 # define EPINNOEXISTS "This pin doesn't exist."
 # define EPININVALIDTYPE "Cannot set an link between those pins."
 

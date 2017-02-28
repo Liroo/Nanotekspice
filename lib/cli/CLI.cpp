@@ -217,11 +217,9 @@ bool nts::CLI::display() const {
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp){
     if ((comp.second)->getType() == "output") {
-      (comp.second)->Dump();
+      *nts::sout << comp.first << "=" << (comp.second)->getPins()[1]->getState() << "\n";
     }
   });
-  // Then ouput newline
-  *nts::sout << "\n";
   return true;
 }
 

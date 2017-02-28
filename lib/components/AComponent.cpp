@@ -69,21 +69,27 @@ void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
 
-  static std::vector<std::string> typesLexem = { "^(?:input|true|false)$", "^clock$", "^output$" };
-  nts::pinConf typePin1, typePin2;
-
   //  Check if pin exists
   if ((int)pin_num_this > _realPins || (int)pin_num_this <= 0 ||
       (int)pin_num_target > component.sizePins() || (int)pin_num_target <= 0) {
     throw nts::Exception::ComponentException(std::cerr, EPINNOEXISTS);
   }
+  std::function<void(nts::Pin *, nts::Pin *)> checkLink =
+  [](nts::Pin *pin_this, nts::Pin *pin_target)->void {
+    nts::pinConf typePin1, typePin2;
+
+    typePin1 = pin_this->getType();
+    typePin2 = pin_target->getType();
+    if ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT) ||
+        (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK) ||
+        (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT)) {
+      throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
+    }
+  };
+
+  checkLink(_pins[pin_num_this], (component.getPins())[pin_num_target]);
+  checkLink((component.getPins())[pin_num_target], _pins[pin_num_this]);
   //  Check linkage error
-  typePin1 = _pins[pin_num_this]->getType();
-  typePin2 = (component.getPins())[pin_num_target]->getType();
-  if (!std::regex_match(component.getType(), std::regex(typesLexem[(int)typePin1])) ||
-      !std::regex_match(_type, std::regex(typesLexem[(int)typePin2]))) {
-    throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
-  }
   // links first component's pin to second one's pin, and second way
   _pins[pin_num_this]->setComp(&component, pin_num_target);
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
@@ -97,11 +103,11 @@ void nts::AComponent::Dump() const {
   };
   int x = 0;
 
-  std::cout << "[" << this->getType() << "\t" << _name << "]:" << std::endl;
+  std::cout << "[" << this->getType() << "\t" << _name << "]:\n";
   std::for_each(_pins.begin(), _pins.end(),
   [&x, this](const std::pair<int, nts::Pin *> &pair) {
     if (x >= _realPins) { return; }
-    std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << std::endl;
+    std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << "\n";
     x++;
   });
 }
@@ -115,16 +121,10 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
     _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
     return _pins[pin_num_this]->getState();
   }
-
   _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
-  //  if pin is not linked, just return undefined state
-  if (!_pins[pin_num_this]->getLinkedPin()) {
-    return nts::Tristate::UNDEFINED;
-  }
 
   nts::FlowChart *gate = _pins[pin_num_this]->getGate();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
-
   std::function<void (nts::Pin *)> computeInputPin =
     [](nts::Pin *pinInput) {
       nts::IComponent *linkedComp = pinInput->getLinkedComp();
@@ -132,6 +132,12 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
 
       if (linkedComp) { pinInput->setState(linkedComp->Compute(linkedPin->getID())); }
     };
+
+  //  if pin is not linked, just return undefined state
+  if (!_pins[pin_num_this]->getLinkedPin()) {
+    std::for_each(inputs->begin(), inputs->end(), computeInputPin);
+    return nts::Tristate::UNDEFINED;
+  }
 
   // if the computed pin is one of the gate's inputs, just compute its linked pin
   if (std::find(inputs->begin(), inputs->end(), _pins[pin_num_this]) != inputs->end()) {
