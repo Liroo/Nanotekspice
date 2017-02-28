@@ -83,10 +83,12 @@ void nts::AComponent::SetLink(size_t pin_num_this,
     if ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT) ||
         (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK) ||
         (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT)) {
+          std::cout << " et pin " << pin_this->getID() << "\n";
+            std::cout << " et pin " << pin_target->getID() << "\n";
+          std::cout << typePin1 << " != " << typePin2 << "\n";
       throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
     }
   };
-
   checkLink(_pins[pin_num_this], (component.getPins())[pin_num_target]);
   checkLink((component.getPins())[pin_num_target], _pins[pin_num_this]);
   //  Check linkage error

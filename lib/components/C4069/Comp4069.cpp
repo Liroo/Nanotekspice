@@ -8,9 +8,9 @@ nts::C4069::C4069(const std::string &name) : AComponent(name, 14) {
     nts::pinConf::INPUT, nts::pinConf::OUTPUT,
     nts::pinConf::INPUT, nts::pinConf::OUTPUT,
     nts::pinConf::NOLINK,
-    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
-    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
-    nts::pinConf::INPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::OUTPUT, nts::pinConf::INPUT,
+    nts::pinConf::OUTPUT, nts::pinConf::INPUT,
+    nts::pinConf::OUTPUT, nts::pinConf::INPUT,
     nts::pinConf::NOLINK // Alim
   }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
@@ -25,13 +25,13 @@ nts::C4069::C4069(const std::string &name) : AComponent(name, 14) {
   _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[5]}),
                                       new std::vector<nts::Pin *>({_pins[6]}),
                                       nts::GateType::NOT));
-  _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[8]}),
-                                      new std::vector<nts::Pin *>({_pins[9]}),
+  _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[9]}),
+                                      new std::vector<nts::Pin *>({_pins[8]}),
                                       nts::GateType::NOT));
-  _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[10]}),
-                                      new std::vector<nts::Pin *>({_pins[11]}),
+  _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[11]}),
+                                      new std::vector<nts::Pin *>({_pins[10]}),
                                       nts::GateType::NOT));
-  _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[12]}),
-                                      new std::vector<nts::Pin *>({_pins[13]}),
+  _gates.push_back(new nts::FlowChart(new std::vector<nts::Pin *>({_pins[13]}),
+                                      new std::vector<nts::Pin *>({_pins[12]}),
                                       nts::GateType::NOT));
 }

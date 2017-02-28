@@ -38,6 +38,7 @@ class nts::Pin {
     void setComp(const nts::IComponent *newComp, const int &pin);
     IComponent *getLinkedComp() const;
     void setState(const nts::Tristate &newState);
+    void updateState(const nts::Tristate &newState);
     Tristate getState() const;
     int getID() const;
     nts::Pin *getLinkedPin() const;
