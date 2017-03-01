@@ -331,8 +331,7 @@ void nts::CLI::_extractInputValue(const std::string &arg) {
   // Check if input exist
   if (!_comps.empty()) {
     std::map<std::string, nts::IComponent *>::iterator inputFound = _comps.find(matched[1]);
-    if (inputFound == _comps.end() || ((*inputFound).second->getType() != "input" &&
-      (*inputFound).second->getType() != "clock")) {
+    if (inputFound == _comps.end() || ((*inputFound).second->getType() != "input") {
       *nts::sout << std::string(matched[1]) << ": " << ECLIARGNOTFOUND << "\n";
       return;
     }
