@@ -13,7 +13,7 @@ nts::CLI::Mode::BasicMode::~BasicMode() {
 
 std::string nts::CLI::Mode::BasicMode::readCmd() {
   // Prompt
-  std::clog << CLI_PROMPT;
+  std::cout << CLI_PROMPT;
   // get user input
   // if user input is empty and EOF is reached, exit
   std::string input;
