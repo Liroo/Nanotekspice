@@ -299,6 +299,8 @@ bool nts::CLI::loop() {
   while (isLooping) {
     simulate();
   }
+  sigIntHandler.sa_handler = SIG_DFL;
+  sigaction(SIGINT, &sigIntHandler, NULL);
 
   return true;
 }
