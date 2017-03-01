@@ -62,6 +62,7 @@ namespace nts {
       // TODO Doc
       bool simulate();
       // TODO Doc
+      static bool isLooping;
       bool loop();
       // TODO Doc
       bool dump() const;

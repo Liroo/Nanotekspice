@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <regex>
+#include "signal.h"
 
 #include "CLI.hpp"
 #include "BasicMode.hpp"
@@ -8,6 +9,7 @@
 namespace nts {
   nts::CLI::Mode::IOut *sout = NULL;
   nts::CLI::Mode::IOut *serr = NULL;
+  bool CLI::isLooping = false;
 };
 
 /*
@@ -282,8 +284,21 @@ bool nts::CLI::simulate() {
 }
 
 bool nts::CLI::loop() {
-  // Should loop simulate :) TODO
-  *nts::sout << "loop" << "\n";
+  nts::CLI::isLooping = true;
+
+  struct sigaction sigIntHandler;
+
+  sigIntHandler.sa_handler = [](int sig) -> void {
+    (void)sig;
+    nts::CLI::isLooping = false;
+  };
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  sigaction(SIGINT, &sigIntHandler, NULL);
+
+  while (isLooping) {
+    simulate();
+  }
 
   return true;
 }
