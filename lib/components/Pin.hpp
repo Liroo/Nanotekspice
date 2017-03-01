@@ -17,7 +17,10 @@ namespace nts {
     XOR,
     BITSADDER,
     FLIPFLOP,
-    TENBITSJOHNSONDECADE
+    TENBITSJOHNSONDECADE,
+    TWELVEBITSCOUNTER,
+    NOT,
+    EIGHTBITSSHIFTER
   };
   class Pin;
   class FlowChart;
@@ -35,6 +38,7 @@ class nts::Pin {
     void setComp(const nts::IComponent *newComp, const int &pin);
     IComponent *getLinkedComp() const;
     void setState(const nts::Tristate &newState);
+    void updateState(const nts::Tristate &newState);
     Tristate getState() const;
     int getID() const;
     nts::Pin *getLinkedPin() const;
@@ -42,6 +46,8 @@ class nts::Pin {
     nts::FlowChart *getGate() const;
     void setComputed(const nts::Tristate &);
     nts::Tristate getComputed() const;
+    void setType(const nts::pinConf &);
+    nts::pinConf getType() const;
 
   private:
     FlowChart *_gate;
@@ -50,6 +56,7 @@ class nts::Pin {
     Tristate _state;
     int _id;
     Tristate _computed;
+    nts::pinConf _type;
 };
 
 typedef std::function<void(const nts::FlowChart *)> gateFn_t;
@@ -70,6 +77,9 @@ class nts::FlowChart {
     static void bitsAdder(const nts::FlowChart *);
     static void flipFlop(const nts::FlowChart *);
     static void tenBitsJohnsonDecade(const nts::FlowChart *gate);
+    static void twelveBitsCounter(const nts::FlowChart *gate);
+    static void NOT(const nts::FlowChart *gate);
+    static void eightBitsShifter(const nts::FlowChart *gate);
     static std::map<GateType, gateFn_t> _gateFn;
 
   public:

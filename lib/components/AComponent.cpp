@@ -3,6 +3,15 @@
 std::map<std::string, createFn_t> nts::AComponent::_fn = {
   { "4001", &nts::AComponent::create4001 },
   { "4008", &nts::AComponent::create4008 },
+  { "4011", &nts::AComponent::create4011 },
+  { "4013", &nts::AComponent::create4013 },
+  { "4017", &nts::AComponent::create4017 },
+  { "4030", &nts::AComponent::create4030 },
+  { "4040", &nts::AComponent::create4040 },
+  { "4069", &nts::AComponent::create4069 },
+  { "4071", &nts::AComponent::create4071 },
+  { "4081", &nts::AComponent::create4081 },
+  { "4094", &nts::AComponent::create4094 },
   { "input", &nts::AComponent::createInput },
   { "clock", &nts::AComponent::createClock },
   { "true", &nts::AComponent::createTrue },
@@ -15,11 +24,14 @@ nts::AComponent::AComponent(const std::string &name, const int &realPins) : _rea
 }
 
 void nts::AComponent::initPins(const int &size,
-                              const nts::Tristate &state) {
+                              const std::vector<nts::pinConf> &pinsConf,
+                              const nts::Tristate &state)
+{
   int i = 1;
 
   while (i <= size) {
     _pins[i] = new Pin(i, state);
+    _pins[i]->setType(pinsConf[i]);
     i++;
   }
 }
@@ -46,25 +58,37 @@ void nts::AComponent::resetPins() const {
     if (pair.second->getComputed() != nts::Tristate::UNDEFINED) {
       (pair.second)->setComputed(nts::Tristate::FALSE);
     }
-    /* TODO Check if needed
-    nts::IComponent *linked = (pair.second)->getLinkedComp();
-    if (linked && !std::regex_match(linked->getType(), std::regex(REG_INPUTTYPE))) {
-      (pair.second)->setState(nts::Tristate::FALSE);
-    } */
   });
+}
+
+int nts::AComponent::sizePins() const {
+  return _realPins;
 }
 
 void nts::AComponent::SetLink(size_t pin_num_this,
                               nts::IComponent &component,
                               size_t pin_num_target) {
-  // check logical links error, throw if needed TODO
-  // maybe lexem in Pin class to check which types can be linked ?
 
-  // invalid pin
-  // variable output on pin input
-  // variable input on pin output
-  // pin input - pin input || pin output - pin output
+  std::function<void(nts::Pin *, nts::Pin *)> checkLink =
+  [](nts::Pin *pin_this, nts::Pin *pin_target)->void {
+    nts::pinConf typePin1, typePin2;
 
+    //  Check if pins exists
+    if (!pin_this || !pin_target) {
+      throw nts::Exception::ComponentException(std::cerr, EPINNOEXISTS);
+    }
+    typePin1 = pin_this->getType();
+    typePin2 = pin_target->getType();
+    if ((typePin1 != nts::pinConf::FAKE && typePin2 != nts::pinConf::FAKE) &&
+        ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT) ||
+        (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK) ||
+        (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT))) {
+      throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
+    }
+  };
+  //  Check linkage error
+  checkLink(_pins[pin_num_this], (component.getPins())[pin_num_target]);
+  checkLink((component.getPins())[pin_num_target], _pins[pin_num_this]);
   // links first component's pin to second one's pin, and second way
   _pins[pin_num_this]->setComp(&component, pin_num_target);
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
@@ -78,42 +102,41 @@ void nts::AComponent::Dump() const {
   };
   int x = 0;
 
-  std::cout << "[" << this->getType() << "\t" << _name << "]:" << std::endl;
+  std::cout << "[" << this->getType() << "\t" << _name << "]:\n";
   std::for_each(_pins.begin(), _pins.end(),
   [&x, this](const std::pair<int, nts::Pin *> &pair) {
     if (x >= _realPins) { return; }
-    std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << std::endl;
+    std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << "\n";
     x++;
   });
 }
 
 nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
 
-  std::cout << "compute: " << this->getName() << ": pin: " << pin_num_this << std::endl;
-
   // if pin is connected to an input-type (true, false, input, clock),
   // or if it has already been computed, return its state
-  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPE)) ||
+  if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPES)) ||
       _pins[pin_num_this]->getComputed() == nts::Tristate::TRUE) {
     _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
     return _pins[pin_num_this]->getState();
   }
-
   _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
-  //  if pin is not linked, just return undefined state
-  if (!_pins[pin_num_this]->getLinkedPin()) {
-    return nts::Tristate::UNDEFINED;
-  }
 
   nts::FlowChart *gate = _pins[pin_num_this]->getGate();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
-
   std::function<void (nts::Pin *)> computeInputPin =
     [](nts::Pin *pinInput) {
       nts::IComponent *linkedComp = pinInput->getLinkedComp();
       nts::Pin *linkedPin = pinInput->getLinkedPin();
+
       if (linkedComp) { pinInput->setState(linkedComp->Compute(linkedPin->getID())); }
     };
+
+  //  if pin is not linked, just return undefined state
+  if (!_pins[pin_num_this]->getLinkedPin()) {
+    std::for_each(inputs->begin(), inputs->end(), computeInputPin);
+    return nts::Tristate::UNDEFINED;
+  }
 
   // if the computed pin is one of the gate's inputs, just compute its linked pin
   if (std::find(inputs->begin(), inputs->end(), _pins[pin_num_this]) != inputs->end()) {
@@ -140,6 +163,34 @@ nts::IComponent *nts::AComponent::create4011(const std::string &value) {
 
 nts::IComponent *nts::AComponent::create4013(const std::string &value) {
   return reinterpret_cast<nts::IComponent *>(new nts::C4013(value));
+}
+
+nts::IComponent *nts::AComponent::create4017(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4017(value));
+}
+
+nts::IComponent *nts::AComponent::create4030(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4030(value));
+}
+
+nts::IComponent *nts::AComponent::create4040(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4040(value));
+}
+
+nts::IComponent *nts::AComponent::create4069(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4069(value));
+}
+
+nts::IComponent *nts::AComponent::create4071(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4071(value));
+}
+
+nts::IComponent *nts::AComponent::create4081(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4081(value));
+}
+
+nts::IComponent *nts::AComponent::create4094(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4094(value));
 }
 
 nts::IComponent *nts::AComponent::createInput(const std::string &value) {

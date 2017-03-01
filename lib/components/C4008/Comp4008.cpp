@@ -2,8 +2,17 @@
 
 nts::C4008::C4008(const std::string &name) : AComponent(name, 16) {
   _type = "4008";
+  this->initPins(22, std::vector<nts::pinConf>({
+    nts::pinConf::NOLINK, // None
+    nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::INPUT, nts::pinConf::INPUT,
+    nts::pinConf::NOLINK,
+    nts::pinConf::INPUT,
+    nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT, nts::pinConf::OUTPUT,
+    nts::pinConf::INPUT,
+    nts::pinConf::NOLINK,
+    nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE, nts::pinConf::FAKE
+  }));
   // set compute value to undefined for pin with alimentation purpose to ignore them later
-  this->initPins(22);
   _pins[8]->setComputed(nts::Tristate::UNDEFINED);
   _pins[16]->setComputed(nts::Tristate::UNDEFINED);
   nts::IComponent *Ithis = reinterpret_cast<nts::IComponent *>(this);
