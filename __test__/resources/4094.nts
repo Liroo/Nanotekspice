@@ -1,0 +1,34 @@
+.chipsets:
+4094	comp
+
+input 	strobe
+input 	data
+clock	cp
+input 	enable
+
+output	qp0
+output 	qp1
+output 	qp2
+output 	qp3
+output 	qp4
+output 	qp5
+output 	qp6
+output 	qp7
+output 	qs1
+output 	qs2
+
+.links:
+strobe:1	comp:1
+data:1		comp:2
+cp:1		comp:3
+enable:1	comp:15
+qp0:1		comp:4
+qp1:1		comp:5
+qp2:1		comp:6
+qp3:1		comp:7
+qp4:1		comp:14
+qp5:1		comp:13
+qp6:1		comp:12
+qp7:1		comp:11
+qs1:1		comp:10
+qs2:1		comp:9

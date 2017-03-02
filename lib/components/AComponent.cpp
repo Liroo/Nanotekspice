@@ -84,7 +84,6 @@ void nts::AComponent::SetLink(size_t pin_num_this,
         ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT && typePin2 != nts::pinConf::CLOCK) ||
         (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK && typePin2 != nts::pinConf::INPUT) ||
         (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT))) {
-          std::cerr << "pin 1 " << "= " << typePin1 << "  pin 2= " << typePin2 << "\n";
       throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
     }
   };

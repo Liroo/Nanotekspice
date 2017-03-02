@@ -12,10 +12,11 @@ class nts::Clock : public nts::AComponent {
     Clock(const std::string &name, const nts::Tristate &state = nts::Tristate::UNDEFINED);
     virtual ~Clock() {};
     virtual bool isRising() const;
-    virtual void uploadRising(const bool &);
+    virtual bool isFalling() const;
+    virtual void uploadMode(const bool &);
 
   private:
-    bool _rising;
+    nts::Tristate _mode;
 };
 
 #endif /* CLOCK_HPP */

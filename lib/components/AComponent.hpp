@@ -63,7 +63,8 @@ class nts::AComponent : public nts::IComponent {
 
     public:
       virtual bool isRising() const { return false; };
-      virtual void uploadRising(const bool &val) { (void)val; };
+      virtual bool isFalling() const { return false; };
+      virtual void uploadMode(const bool &val) { (void)val; };
 
   protected:
     std::string _name;

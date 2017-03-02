@@ -16,7 +16,8 @@ namespace nts {
     AND,
     XOR,
     BITSADDER,
-    FLIPFLOP,
+    FLIPFLOPD,
+    FLIPFLOPRS,
     TENBITSJOHNSONDECADE,
     TWELVEBITSCOUNTER,
     NOT,
@@ -76,7 +77,8 @@ class nts::FlowChart {
     static void NAND(const nts::FlowChart *);
     static void XOR(const nts::FlowChart *);
     static void bitsAdder(const nts::FlowChart *);
-    static void flipFlop(const nts::FlowChart *);
+    static void flipFlopD(const nts::FlowChart *);
+    static void flipFlopRS(const nts::FlowChart *);
     static void tenBitsJohnsonDecade(const nts::FlowChart *gate);
     static void twelveBitsCounter(const nts::FlowChart *gate);
     static void NOT(const nts::FlowChart *gate);

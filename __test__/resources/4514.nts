@@ -1,6 +1,3 @@
-# Adminral Business Machines 1954-2042
-# 4 bits decoder
-
 .chipsets:
 input		a0
 input		a1
