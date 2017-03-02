@@ -14,7 +14,7 @@ fi
 
 # push to mirror repository (https://github.com/Liroo/Nanotekspice)
 echo
-git push --mirror git@github.com:Liroo/Nanotekspice.gi
+git push --mirror git@github.com:Liroo/Nanotekspice.git
 if [ $? -eq 0 ]
 then
   echo
