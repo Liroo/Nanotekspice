@@ -93,8 +93,7 @@ nts::CLI::CLI(int argc, char *argv[]) try {
     { "loop", [this]() -> bool { return this->loop(); } },
     { "dump", [this]() -> bool { return this->dump(); } }
   };
-  // Init dirty optimization
-  _dirty = true;
+
   if (!_config.mode) {
     _config.mode = new nts::CLI::Mode::BasicMode();
   }
@@ -220,14 +219,6 @@ bool nts::CLI::display() const {
   return true;
 }
 
-void nts::CLI::_setDirty(const bool &dirty) {
-  _dirty = dirty;
-}
-
-bool nts::CLI::_isDirty() const {
-  return _dirty == true;
-}
-
 bool nts::CLI::simulate() {
   _parser.setInputValues(_config.inputValue);
 
@@ -266,7 +257,6 @@ bool nts::CLI::simulate() {
           ((*it).second)->uploadRising(!value);
         }
       });
-  _setDirty(false);
   return true;
 }
 
@@ -344,5 +334,4 @@ void nts::CLI::_extractInputValue(const std::string &arg) {
   } else { // if not, create a new one
     _config.inputValue.push_back(std::pair<std::string, std::string>(matched[1], matched[2]));
   }
-  _setDirty(true);
 }
