@@ -1,48 +1,48 @@
-> cout=1
+cout=1
 s=0
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=0
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=1
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=0
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=1
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=0
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=1
 s2=1
 s3=1
 s4=1
-> exit
-> cout=1
+> > exit
+cout=1
 s=1
 s2=1
 s3=1
 s4=1
-> exit
+> > exit

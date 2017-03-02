@@ -1,4 +1,4 @@
-> qp0=0
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -8,8 +8,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -19,8 +19,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -30,8 +30,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -41,8 +41,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -52,8 +52,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -63,8 +63,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -74,8 +74,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -85,8 +85,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -96,8 +96,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -107,8 +107,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -118,8 +118,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=0
+> > exit
+qp0=0
 qp1=0
 qp2=0
 qp3=0
@@ -129,8 +129,8 @@ qp6=0
 qp7=0
 qs1=0
 qs2=0
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -140,8 +140,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -151,8 +151,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -162,8 +162,8 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
-> qp0=-1
+> > exit
+qp0=-1
 qp1=-1
 qp2=-1
 qp3=-1
@@ -173,4 +173,4 @@ qp6=-1
 qp7=-1
 qs1=-1
 qs2=-1
-> exit
+> > exit

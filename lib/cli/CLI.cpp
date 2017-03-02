@@ -127,6 +127,7 @@ int nts::CLI::startCLI() {
      _parser.parseTree(*root);
      _comps = _parser.getComponentsMap();
      simulate();
+     display();
    } catch (const nts::Exception::BaseException &e) {
      *nts::serr << e.what() << "\n";
      return 1;
@@ -213,7 +214,8 @@ bool nts::CLI::display() const {
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp){
     if ((comp.second)->getType() == "output") {
-      *nts::sout << comp.first << "=" << (comp.second)->getPins()[1]->getState() << "\n";
+      nts::Tristate state = (comp.second)->getPins()[1]->getState();
+      *nts::sout << comp.first << "=" << (state != nts::Tristate::UNDEFINED ? std::to_string((int)state) : "U") << "\n";
     }
   });
   return true;

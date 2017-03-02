@@ -124,7 +124,7 @@ void nts::FlowChart::NOR(const nts::FlowChart *gate) {
   bool b = (*inputs)[1]->getState();
 
   if (!gate->hasDefinedPins()) { (*outputs)[0]->updateState(nts::Tristate::UNDEFINED); }
-  else { (*outputs)[0]->updateState((nts::Tristate)((!a && b) || (!b && a))); }
+  else { (*outputs)[0]->updateState((nts::Tristate)(bool)(!(a || b))); }
 }
 
 void nts::FlowChart::NOT(const nts::FlowChart *gate) {
