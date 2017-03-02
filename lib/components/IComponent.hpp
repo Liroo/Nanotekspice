@@ -4,8 +4,8 @@
 namespace nts {
   enum Tristate {
     UNDEFINED = (-true),
-    TRUE = true,
-    FALSE = false
+    TRUE_NTS = true,
+    FALSE_NTS = false
   };
   enum pinConf {
     NOLINK = -1,

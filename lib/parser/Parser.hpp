@@ -1,6 +1,10 @@
 #ifndef PARSER_CPP
 # define PARSER_CPP
 
+namespace nts {
+  class Parser;
+};
+
 # include "IParser.hpp"
 # include "AComponent.hpp"
 # include <iostream>

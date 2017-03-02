@@ -33,7 +33,7 @@ class nts::Pin {
     Pin(const int &id = -1,
         const nts::Tristate &state = nts::Tristate::UNDEFINED,
         const nts::IComponent *comp = NULL,
-        const nts::Tristate &computed = nts::Tristate::FALSE);
+        const nts::Tristate &computed = nts::Tristate::FALSE_NTS);
     ~Pin();
 
   public:

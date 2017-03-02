@@ -2,18 +2,18 @@
 # define CLI_HPP
 
 # include <vector>
+# include <map>
 # include <cstdlib>
 # include <fstream>
 # include <sstream>
 # include <functional>
 # include "CLIException.hpp"
 # include "Parser.hpp"
+# include "Mode.hpp"
 
 # define REG_INPUTCLI "^(\\w+)=([01])"
 # define REG_OPTIONS "--(mode)=(.*)"
 # define CLI_CMD_NOT_FOUND "command not found. try `help`"
-# define CLI_PROMPT "> "
-# define CLI_PROMPT_SIZE 2
 
 
 /*
@@ -101,19 +101,6 @@ namespace nts {
       std::map<std::string, _CLICommand> _cmd;
       bool _execCmd();
 
-    public:
-      // definition of mode namespace like of mode of CLI
-      class Mode {
-        public:
-          class AMode;
-          class NcursesMode;
-          class BasicMode;
-          /**/
-          class IOut;
-          class NcursesOut;
-          class BasicOut;
-          /**/
-      };
     private:
       /*
         private config of CLI class
@@ -124,7 +111,7 @@ namespace nts {
         inputValue: vector -> extracted inputModifier of argv params or CLI
       */
       struct config {
-        Mode::AMode *mode;
+        nts::Mode::AMode *mode;
         std::string fileInput;
         std::vector<std::pair<std::string, std::string> > inputValue;
       };
@@ -140,8 +127,6 @@ namespace nts {
       bool _isDirty() const;
 
   };
-  extern nts::CLI::Mode::IOut *sout;
-  extern nts::CLI::Mode::IOut *serr;
 }; // namespace nts
 
 #endif

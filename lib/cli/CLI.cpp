@@ -7,8 +7,8 @@
 #include "NcursesMode.hpp"
 
 namespace nts {
-  nts::CLI::Mode::IOut *sout = NULL;
-  nts::CLI::Mode::IOut *serr = NULL;
+  nts::Mode::IOut *sout = NULL;
+  nts::Mode::IOut *serr = NULL;
   bool CLI::isLooping = false;
 };
 
@@ -64,7 +64,7 @@ nts::CLI::CLI(int argc, char *argv[]) try {
         if (matched[2].compare("ncurses") == 0) {
           try {
             // if constructor of ncurses init failed, switch to basic Mode
-            _config.mode = new nts::CLI::Mode::NcursesMode();
+            _config.mode = new nts::Mode::NcursesMode();
           } catch (nts::Exception::CLIException) {
             _config.mode = NULL;
           }
@@ -95,7 +95,7 @@ nts::CLI::CLI(int argc, char *argv[]) try {
   };
 
   if (!_config.mode) {
-    _config.mode = new nts::CLI::Mode::BasicMode();
+    _config.mode = new nts::Mode::BasicMode();
   }
 } catch (const nts::Exception::CLIException& e) {
   // If Mode is already define, delete it to be sure terminal is well reset

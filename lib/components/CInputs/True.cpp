@@ -5,6 +5,6 @@ nts::True::True(const std::string &name) : AComponent(name, 1) {
     std::vector<nts::pinConf>({
       nts::pinConf::NOLINK, // None
       nts::pinConf::OUTPUT
-    }), nts::Tristate::TRUE);
+    }), nts::Tristate::TRUE_NTS);
   _type = "true";
 }

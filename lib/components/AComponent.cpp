@@ -1,4 +1,6 @@
 #include "AComponent.hpp"
+#include "Mode.hpp"
+#include "IComponent.hpp"
 
 std::map<std::string, createFn_t> nts::AComponent::_fn = {
   { "4001", &nts::AComponent::create4001 },
@@ -57,7 +59,7 @@ void nts::AComponent::resetPins() const {
   std::for_each(_pins.begin(), _pins.end(),
   [](const std::pair<int, nts::Pin *> &pair) {
     if (pair.second->getComputed() != nts::Tristate::UNDEFINED) {
-      (pair.second)->setComputed(nts::Tristate::FALSE);
+      (pair.second)->setComputed(nts::Tristate::FALSE_NTS);
     }
   });
 }
@@ -98,17 +100,17 @@ void nts::AComponent::SetLink(size_t pin_num_this,
 void nts::AComponent::Dump() const {
   static std::map<nts::Tristate, std::string> states = {
     { nts::Tristate::UNDEFINED, "undefined" },
-    { nts::Tristate::FALSE, "false" },
-    { nts::Tristate::TRUE, "true" }
+    { nts::Tristate::FALSE_NTS, "false" },
+    { nts::Tristate::TRUE_NTS, "true" }
   };
   int x = 0;
 
-  std::cout << "[" << this->getType() << "\t" << _name << "]:\n";
+  *nts::sout << "[" << this->getType() << "\t" << _name << "]:\n";
   std::for_each(_pins.begin(), _pins.end(),
   [&x, this](const std::pair<int, nts::Pin *> &pair) {
     if (x >= _realPins) { return; }
     nts::Tristate state = (pair.second)->getState();
-    std::cout << "Pin n°" << pair.first << ": \t" << states[state] << "\n";
+    *nts::sout << "Pin n°" << pair.first << ": \t" << states[state] << "\n";
     x++;
   });
 }
@@ -118,11 +120,11 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
   // if pin is connected to an input-type (true, false, input, clock),
   // or if it has already been computed, return its state
   if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPES)) ||
-      _pins[pin_num_this]->getComputed() == nts::Tristate::TRUE) {
-    _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
+      _pins[pin_num_this]->getComputed() == nts::Tristate::TRUE_NTS) {
+    _pins[pin_num_this]->setComputed(nts::Tristate::TRUE_NTS);
     return _pins[pin_num_this]->getState();
   }
-  _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
+  _pins[pin_num_this]->setComputed(nts::Tristate::TRUE_NTS);
 
   nts::FlowChart *gate = _pins[pin_num_this]->getGate();
   std::vector<nts::Pin *> *inputs = gate->getInputs();

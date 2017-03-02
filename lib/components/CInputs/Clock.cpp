@@ -12,11 +12,11 @@ nts::Clock::Clock(const std::string &name, const nts::Tristate &state) : ACompon
 }
 
 bool nts::Clock::isRising() const {
-  return _mode == nts::Tristate::TRUE;
+  return _mode == nts::Tristate::TRUE_NTS;
 }
 
 bool nts::Clock::isFalling() const {
-  return _mode == nts::Tristate::FALSE;
+  return _mode == nts::Tristate::FALSE_NTS;
 }
 
 void nts::Clock::uploadMode(const bool &value) {

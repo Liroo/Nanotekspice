@@ -6,6 +6,6 @@ nts::False::False(const std::string &name) : AComponent(name, 1) {
       nts::pinConf::NOLINK, // None
       nts::pinConf::OUTPUT
     }),
-    nts::Tristate::FALSE);
+    nts::Tristate::FALSE_NTS);
   _type = "false";
 }
