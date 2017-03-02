@@ -8,6 +8,7 @@
 # define ECLIBADSYNTAX "bad syntax"
 # define ECLIUNKNOWOPT "unknown option"
 # define ECLIARGNOTFOUND "variable not found"
+# define ECLIARGNOTWRITABLE "is read only"
 
 # define ECLINCURSESINIT "ncurses failed to init, switch to basic mode"
 
