@@ -1,17 +1,17 @@
 #include "BasicMode.hpp"
 #include <iostream>
 
-nts::CLI::Mode::BasicMode::BasicMode() {
-  nts::sout = new nts::CLI::Mode::BasicOut(std::cout);
-  nts::serr = new nts::CLI::Mode::BasicOut(std::cerr);
+nts::Mode::BasicMode::BasicMode() {
+  nts::sout = new nts::Mode::BasicOut(std::cout);
+  nts::serr = new nts::Mode::BasicOut(std::cerr);
 }
 
-nts::CLI::Mode::BasicMode::~BasicMode() {
+nts::Mode::BasicMode::~BasicMode() {
   delete nts::sout;
   delete nts::serr;
 }
 
-std::string nts::CLI::Mode::BasicMode::readCmd() {
+std::string nts::Mode::BasicMode::readCmd() {
   // Prompt
   std::cout << CLI_PROMPT;
   // get user input
@@ -32,17 +32,17 @@ std::string nts::CLI::Mode::BasicMode::readCmd() {
 }
 
 
-nts::CLI::Mode::IOut& nts::CLI::Mode::BasicOut::operator<<(const std::string& str) {
+nts::Mode::IOut& nts::Mode::BasicOut::operator<<(const std::string& str) {
   _os << str;
   return *this;
 }
 
-nts::CLI::Mode::IOut& nts::CLI::Mode::BasicOut::operator<<(const char* str) {
+nts::Mode::IOut& nts::Mode::BasicOut::operator<<(const char* str) {
   _os << str;
   return *this;
 }
 
-nts::CLI::Mode::IOut& nts::CLI::Mode::BasicOut::operator<<(int i) {
+nts::Mode::IOut& nts::Mode::BasicOut::operator<<(int i) {
   _os << i;
   return *this;
 }

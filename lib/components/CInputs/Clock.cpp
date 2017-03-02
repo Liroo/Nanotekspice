@@ -8,7 +8,6 @@ nts::Clock::Clock(const std::string &name, const nts::Tristate &state) : ACompon
     }),
     state);
   _type = "clock";
-  _mode = nts::Tristate::UNDEFINED;
 }
 
 bool nts::Clock::isRising() {

@@ -1,9 +1,0 @@
-# Toto
-# Titi
-
-.chipsets:
-input		a
-output		o
-
-.links:
-a:1		o:1
