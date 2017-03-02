@@ -74,6 +74,7 @@ std::map<nts::GateType, gateFn_t> nts::FlowChart::_gateFn = {
   { nts::GateType::TENBITSJOHNSONDECADE, &nts::FlowChart::tenBitsJohnsonDecade },
   { nts::GateType::TWELVEBITSCOUNTER, &nts::FlowChart::twelveBitsCounter },
   { nts::GateType::EIGHTBITSSHIFTER, &nts::FlowChart::eightBitsShifter },
+  { nts::GateType::DECODER, &nts::FlowChart::decoder },
   { nts::GateType::NOT, &nts::FlowChart::NOT },
   { nts::GateType::NAND, &nts::FlowChart::NAND },
   { nts::GateType::AND, &nts::FlowChart::AND },
@@ -208,8 +209,9 @@ void nts::FlowChart::bitsAdder(const nts::FlowChart *gate) {
 void nts::FlowChart::flipFlop(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *outputs = gate->getOutputs();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
+  nts::Tristate reset = (*inputs)[1]->getState();
+  nts::Tristate set = (*inputs)[3]->getState();
   nts::Tristate data = (*inputs)[2]->getState();
-  nts::Tristate last = (*outputs)[2]->getState();
 
   if (!gate->hasDefinedPins()) {
     std::for_each(outputs->begin(), outputs->end(),
@@ -219,29 +221,29 @@ void nts::FlowChart::flipFlop(const nts::FlowChart *gate) {
     return;
   }
   //  reset
-  if ((*inputs)[1]->getState() == nts::Tristate::TRUE) {
-    std::for_each(outputs->begin(), outputs->end(),
-    [](nts::Pin *pin) {
-      pin->updateState(nts::Tristate::FALSE);
-    });
+  if (reset || set) {
+    (*outputs)[0]->updateState(set);
+    (*outputs)[1]->updateState(reset);
     return;
   }
   //  clock rising (down -> up)
   if ((*inputs)[0]->getLinkedComp()->isRising()) {
     (*outputs)[0]->updateState(data);
-    (*outputs)[1]->updateState((int)data < 0 ? nts::Tristate::UNDEFINED : nts::Tristate(!data));
-    (*outputs)[2]->updateState(data);
-  } else { //  clock !rising
-    (*outputs)[0]->updateState(last);
-    (*outputs)[1]->updateState((int)last < 0 ? nts::Tristate::UNDEFINED : nts::Tristate(!last));
+    (*outputs)[1]->updateState(nts::Tristate(!data));
   }
 }
 
 void nts::FlowChart::tenBitsJohnsonDecade(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *outputs = gate->getOutputs();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
+  auto it = std::find_if(outputs->begin(), outputs->end(),
+        [](nts::Pin *pin) {
+          return pin->getState() == nts::Tristate::TRUE;
+        });
+  int val = it - outputs->begin();
+  bool rising = (*inputs)[1]->getLinkedComp()->isRising();
 
-  //  TODO  test 10 bits johnson  4017
+  std::cerr << "val = " << val << "\n";
   if (!gate->hasDefinedPins()) {
     std::for_each(outputs->begin(), outputs->end(),
     [](nts::Pin *pin) {
@@ -250,35 +252,27 @@ void nts::FlowChart::tenBitsJohnsonDecade(const nts::FlowChart *gate) {
     return;
   }
   //  reset
-  if ((*inputs)[2]->getState() == nts::Tristate::TRUE) {
+  if ((*inputs)[2]->getState() == nts::Tristate::TRUE || (rising && val == 11)) {
     std::for_each(outputs->begin(), outputs->end(),
     [](nts::Pin *pin) {
-        pin->setState(nts::Tristate::FALSE);
+        pin->updateState(nts::Tristate::FALSE);
       });
     (*outputs)[0]->updateState(nts::Tristate::TRUE);
     (*outputs)[10]->updateState(nts::Tristate::TRUE);
-    return;
   }
-  if (!(*inputs)[1]->getLinkedComp()->isRising()){
-    return;
-  }
-//  if clock is rising (down -> up), incremente counter
-  auto it = std::find_if(outputs->begin(), outputs->end(),
-        [](nts::Pin *pin) {
-          return pin->getState() == nts::Tristate::TRUE;
-        });
-  int val = it - outputs->begin();
-  (*outputs)[val]->updateState(nts::Tristate::FALSE);
-  val = (val + 1) % 10;
-  (*outputs)[val]->updateState(nts::Tristate::TRUE);
-
-  //  set carry state
-  (*outputs)[11]->updateState(nts::Tristate(val % 5 == 0));
-
   //  if inhibit true, change clock value so it will be restored to original state
   if ((*inputs)[0]->getState() == nts::Tristate::TRUE) {
     bool x = (*inputs)[1]->getState();
     (*inputs)[1]->updateState((nts::Tristate)(!x));
+  }
+  if (val != 11 && rising) {
+  //  if clock is rising (down -> up), incremente counter
+    (*outputs)[val]->updateState(nts::Tristate::FALSE);
+    val = (val + 1) % 10;
+    (*outputs)[val]->updateState(nts::Tristate::TRUE);
+
+    //  set carry state
+    (*outputs)[10]->updateState(nts::Tristate(val % 5 == 0));
   }
 }
 
@@ -313,6 +307,7 @@ void nts::FlowChart::twelveBitsCounter(const nts::FlowChart *gate) {
     (*outputs)[val]->updateState(nts::Tristate::TRUE);
   }
 }
+
 void nts::FlowChart::eightBitsShifter(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *outputs = gate->getOutputs();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
@@ -320,17 +315,64 @@ void nts::FlowChart::eightBitsShifter(const nts::FlowChart *gate) {
   if (!gate->hasDefinedPins()) {
     std::for_each(outputs->begin(), outputs->end(),
     [](nts::Pin *pin) {
-      pin->setState(nts::Tristate::UNDEFINED);
+      pin->updateState(nts::Tristate::UNDEFINED);
     });
     return;
   }
-  if ((*inputs)[2]->getLinkedComp()->isRising()) { // TODO  wtf is HI Z
-
-
-  } else {
-
+  if ((*inputs)[3]->getState() == nts::Tristate::FALSE) { // if OE is false
+    std::for_each(outputs->begin(), outputs->end(),
+    [](nts::Pin *output) {
+      output->updateState(nts::Tristate::FALSE);
+    });
   }
+  if ((*inputs)[2]->getLinkedComp()->isRising()) {
+    (*outputs)[9]->updateState((*outputs)[6]->getState()); // Qs
+    if ((*inputs)[3]->getState() == nts::Tristate::TRUE &&
+        (*inputs)[0]->getState() == nts::Tristate::TRUE) {  // OE && STROBE
+          nts::Tristate value = (*inputs)[1]->getState();
 
+          std::for_each(outputs->begin(), outputs->end(),
+          [&value](nts::Pin *output) {
+            output->updateState(value);
+          });
+      }
+    }
+  else {
+    (*outputs)[8]->updateState((*outputs)[6]->getState()); // Q's
+  }
+}
+
+void nts::FlowChart::decoder(const nts::FlowChart *gate) {
+  std::vector<nts::Pin *> *outputs = gate->getOutputs();
+  std::vector<nts::Pin *> *inputs = gate->getInputs();
+  bool a = (*inputs)[0]->getState();
+  bool b = (*inputs)[1]->getState();
+  bool c = (*inputs)[2]->getState();
+  bool d = (*inputs)[3]->getState();
+
+  if (!gate->hasDefinedPins()) {
+    std::for_each(outputs->begin(), outputs->end(),
+    [](nts::Pin *pin) {
+      pin->updateState(nts::Tristate::UNDEFINED);
+    });
+    return;
+  }
+  (*outputs)[0]->updateState(nts::Tristate((bool)(~a & ~b & ~c & ~d)));
+  (*outputs)[1]->updateState(nts::Tristate((bool)(a & ~b & ~c & ~d)));
+  (*outputs)[2]->updateState(nts::Tristate((bool)(~a & b & ~c & ~d)));
+  (*outputs)[3]->updateState(nts::Tristate((bool)(a & b & ~c & ~d)));
+  (*outputs)[4]->updateState(nts::Tristate((bool)(~a & ~b & c & ~d)));
+  (*outputs)[5]->updateState(nts::Tristate((bool)(a & ~b & c & ~d)));
+  (*outputs)[6]->updateState(nts::Tristate((bool)(~a & b & c & ~d)));
+  (*outputs)[7]->updateState(nts::Tristate((bool)(a & b & c & ~d)));
+  (*outputs)[8]->updateState(nts::Tristate((bool)(~a & ~b & ~c & d)));
+  (*outputs)[9]->updateState(nts::Tristate((bool)(a & ~b & ~c & d)));
+  (*outputs)[10]->updateState(nts::Tristate((bool)(~a & b & ~c & d)));
+  (*outputs)[11]->updateState(nts::Tristate((bool)(a & b & ~c & d)));
+  (*outputs)[12]->updateState(nts::Tristate((bool)(~a & ~b & c & d)));
+  (*outputs)[13]->updateState(nts::Tristate((bool)(a & ~b & c & d)));
+  (*outputs)[14]->updateState(nts::Tristate((bool)(~a & b & c & d)));
+  (*outputs)[15]->updateState(nts::Tristate((bool)(a & b & c & d)));
 }
 
 void nts::FlowChart::Exec() const {

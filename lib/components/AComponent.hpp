@@ -53,6 +53,7 @@ class nts::AComponent : public nts::IComponent {
     static IComponent *create4071(const std::string &value);
     static IComponent *create4081(const std::string &value);
     static IComponent *create4094(const std::string &value);
+    static IComponent *create4514(const std::string &value);
     static IComponent *createInput(const std::string &value);
     static IComponent *createClock(const std::string &value);
     static IComponent *createTrue(const std::string &value);
@@ -62,7 +63,7 @@ class nts::AComponent : public nts::IComponent {
 
     public:
       virtual bool isRising() const { return false; };
-      virtual void uploadRising() {};
+      virtual void uploadRising(const bool &val) { (void)val; };
 
   protected:
     std::string _name;
@@ -83,6 +84,7 @@ class nts::AComponent : public nts::IComponent {
 # include "Comp4071.hpp"
 # include "Comp4081.hpp"
 # include "Comp4094.hpp"
+# include "Comp4514.hpp"
 # include "Input.hpp"
 # include "Clock.hpp"
 # include "True.hpp"

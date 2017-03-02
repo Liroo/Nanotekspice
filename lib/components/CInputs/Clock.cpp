@@ -15,6 +15,6 @@ bool nts::Clock::isRising() const {
   return _rising == true;
 }
 
-void nts::Clock::uploadRising() {
-  _rising = _pins[1]->getState() == nts::Tristate::TRUE;
+void nts::Clock::uploadRising(const bool &value) {
+  _rising = value == nts::Tristate::TRUE;
 }

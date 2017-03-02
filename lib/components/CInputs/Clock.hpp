@@ -12,7 +12,7 @@ class nts::Clock : public nts::AComponent {
     Clock(const std::string &name, const nts::Tristate &state = nts::Tristate::UNDEFINED);
     virtual ~Clock() {};
     virtual bool isRising() const;
-    virtual void uploadRising();
+    virtual void uploadRising(const bool &);
 
   private:
     bool _rising;

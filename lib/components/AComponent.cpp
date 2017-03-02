@@ -12,6 +12,7 @@ std::map<std::string, createFn_t> nts::AComponent::_fn = {
   { "4071", &nts::AComponent::create4071 },
   { "4081", &nts::AComponent::create4081 },
   { "4094", &nts::AComponent::create4094 },
+  { "4514", &nts::AComponent::create4514 },
   { "input", &nts::AComponent::createInput },
   { "clock", &nts::AComponent::createClock },
   { "true", &nts::AComponent::createTrue },
@@ -80,9 +81,10 @@ void nts::AComponent::SetLink(size_t pin_num_this,
     typePin1 = pin_this->getType();
     typePin2 = pin_target->getType();
     if ((typePin1 != nts::pinConf::FAKE && typePin2 != nts::pinConf::FAKE) &&
-        ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT) ||
-        (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK) ||
+        ((typePin1 == nts::pinConf::INPUT && typePin2 != nts::pinConf::OUTPUT && typePin2 != nts::pinConf::CLOCK) ||
+        (typePin1 == nts::pinConf::CLOCK && typePin2 != nts::pinConf::CLOCK && typePin2 != nts::pinConf::INPUT) ||
         (typePin1 == nts::pinConf::OUTPUT && typePin2 != nts::pinConf::INPUT))) {
+          std::cerr << "pin 1 " << "= " << typePin1 << "  pin 2= " << typePin2 << "\n";
       throw nts::Exception::ComponentException(std::cerr, EPININVALIDTYPE);
     }
   };
@@ -106,7 +108,8 @@ void nts::AComponent::Dump() const {
   std::for_each(_pins.begin(), _pins.end(),
   [&x, this](const std::pair<int, nts::Pin *> &pair) {
     if (x >= _realPins) { return; }
-    std::cout << "Pin n°" << pair.first << ": \t" << states[(pair.second)->getState()] << "\n";
+    nts::Tristate state = (pair.second)->getState();
+    std::cout << "Pin n°" << pair.first << ": \t" << states[state] << "\n";
     x++;
   });
 }
@@ -133,7 +136,8 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
     };
 
   //  if pin is not linked, just return undefined state
-  if (!_pins[pin_num_this]->getLinkedPin()) {
+  if (_pins[pin_num_this]->getType() != nts::pinConf::OUTPUT &&
+      !_pins[pin_num_this]->getLinkedPin()) {
     std::for_each(inputs->begin(), inputs->end(), computeInputPin);
     return nts::Tristate::UNDEFINED;
   }
@@ -191,6 +195,10 @@ nts::IComponent *nts::AComponent::create4081(const std::string &value) {
 
 nts::IComponent *nts::AComponent::create4094(const std::string &value) {
   return reinterpret_cast<nts::IComponent *>(new nts::C4094(value));
+}
+
+nts::IComponent *nts::AComponent::create4514(const std::string &value) {
+  return reinterpret_cast<nts::IComponent *>(new nts::C4514(value));
 }
 
 nts::IComponent *nts::AComponent::createInput(const std::string &value) {

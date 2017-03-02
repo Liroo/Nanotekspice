@@ -205,7 +205,6 @@ void nts::Parser::parseTree(t_ast_node& root) {
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent*> &pair) {
     if ((pair.second)->getType() == "output" && !((pair.second)->getPins()[1]->getLinkedComp())) {
-      //  TODO should every pin output linked ? or every output variable linked ?
       throw nts::Exception::ParserException(std::cerr, (pair.second)->getName() + EPARSOUTPUTNOTLINKED);
     }
   });

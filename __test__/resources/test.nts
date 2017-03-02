@@ -1,0 +1,13 @@
+.chipsets:
+
+
+# dsqdsq
+
+output x
+
+clock c
+
+4094 comp
+
+.links:
+c:1 x:1

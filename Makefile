@@ -31,7 +31,8 @@ SRC_LIB =	parser/Parser.cpp									\
 					components/C4069/Comp4069.cpp			\
 					components/C4071/Comp4071.cpp			\
 					components/C4081/Comp4081.cpp			\
-					components/C4094/Comp4094.cpp
+					components/C4094/Comp4094.cpp			\
+					components/C4514/Comp4514.cpp
 
 OBJ_LIB = $(addprefix $(OBJ_LIBDIR), $(SRC_LIB:.cpp=.o))
 

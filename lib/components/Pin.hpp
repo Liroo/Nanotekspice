@@ -20,7 +20,8 @@ namespace nts {
     TENBITSJOHNSONDECADE,
     TWELVEBITSCOUNTER,
     NOT,
-    EIGHTBITSSHIFTER
+    EIGHTBITSSHIFTER,
+    DECODER
   };
   class Pin;
   class FlowChart;
@@ -80,6 +81,7 @@ class nts::FlowChart {
     static void twelveBitsCounter(const nts::FlowChart *gate);
     static void NOT(const nts::FlowChart *gate);
     static void eightBitsShifter(const nts::FlowChart *gate);
+    static void decoder(const nts::FlowChart *gate);
     static std::map<GateType, gateFn_t> _gateFn;
 
   public:

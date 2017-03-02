@@ -236,29 +236,6 @@ bool nts::CLI::_isDirty() const {
 bool nts::CLI::simulate() {
   _parser.setInputValues(_config.inputValue);
 
-  //  function to reverse clock's value
-  std::function<void(std::pair<std::string, std::string> &inputValue)> uploadClock =
-      [this](std::pair<std::string, std::string> &inputValue)->void{
-        std::string name(inputValue.first);
-        int value;
-        std::stringstream(inputValue.second) >> value;
-        std::map<std::string, nts::IComponent *>::iterator it;
-
-        it = std::find_if(_comps.begin(), _comps.end(),
-          [&name](const std::pair<std::string, nts::IComponent *> comp) {
-            return (comp.second)->getName() == name && (comp.second)->getType() == "clock";
-          });
-        if (it != _comps.end()) {
-            inputValue.second = std::to_string(!value);
-            ((*it).second)->uploadRising();
-          }
-        };
-
-  if (!_isDirty()) {
-    std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
-    return true;
-  }
-
   // reset pins compute security
   std::for_each(_comps.begin(), _comps.end(),
     [](std::pair<std::string, nts::IComponent *> comp) {
@@ -278,7 +255,22 @@ bool nts::CLI::simulate() {
     });
   });
 
-  std::for_each(_config.inputValue.begin(), _config.inputValue.end(), uploadClock);
+  std::for_each(_config.inputValue.begin(), _config.inputValue.end(),
+    [this](std::pair<std::string, std::string> &inputValue)->void{
+      std::string name(inputValue.first);
+      int value;
+      std::stringstream(inputValue.second) >> value;
+      std::map<std::string, nts::IComponent *>::iterator it;
+
+      it = std::find_if(_comps.begin(), _comps.end(),
+        [&name](const std::pair<std::string, nts::IComponent *> comp) {
+          return (comp.second)->getName() == name && (comp.second)->getType() == "clock";
+        });
+      if (it != _comps.end()) {
+          inputValue.second = std::to_string(!value);
+          ((*it).second)->uploadRising(!value);
+        }
+      });
   _setDirty(false);
   return true;
 }

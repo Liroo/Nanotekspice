@@ -24,7 +24,6 @@ namespace nts {
 # include <vector>
 # include <algorithm>
 
-
 class nts::IComponent {
   public:
     virtual ~IComponent(void) { };
@@ -47,7 +46,7 @@ class nts::IComponent {
 
   public:
     virtual bool isRising() const  = 0;
-    virtual void uploadRising() = 0;
+    virtual void uploadRising(const bool &) = 0;
 
   public:
     virtual void resetPins() const = 0;
