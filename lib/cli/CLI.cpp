@@ -126,12 +126,7 @@ int nts::CLI::startCLI() {
      root = _parser.createTree();
      // should check if every input/clock has a value
      _parser.parseTree(*root);
-   } catch (nts::Exception::ParserException &e) {
-     *nts::serr << e.what() << "\n";
-     return 1;
-   }
-   _comps = _parser.getComponentsMap();
-   try {
+     _comps = _parser.getComponentsMap();
      simulate();
    } catch (const nts::Exception::BaseException &e) {
      *nts::serr << e.what() << "\n";
