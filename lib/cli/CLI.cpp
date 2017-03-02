@@ -254,7 +254,7 @@ bool nts::CLI::simulate() {
         });
       if (it != _comps.end()) {
           inputValue.second = std::to_string(!value);
-          ((*it).second)->uploadRising(!value);
+          ((*it).second)->uploadMode(!value);
         }
       });
   return true;

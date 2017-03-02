@@ -8,13 +8,17 @@ nts::Clock::Clock(const std::string &name, const nts::Tristate &state) : ACompon
     }),
     state);
   _type = "clock";
-  _rising = false;
+  _mode = nts::Tristate::UNDEFINED;
 }
 
 bool nts::Clock::isRising() const {
-  return _rising == true;
+  return _mode == nts::Tristate::TRUE;
 }
 
-void nts::Clock::uploadRising(const bool &value) {
-  _rising = value == nts::Tristate::TRUE;
+bool nts::Clock::isFalling() const {
+  return _mode == nts::Tristate::FALSE;
+}
+
+void nts::Clock::uploadMode(const bool &value) {
+  _mode = (nts::Tristate)value;
 }

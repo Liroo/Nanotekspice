@@ -46,7 +46,8 @@ class nts::IComponent {
 
   public:
     virtual bool isRising() const  = 0;
-    virtual void uploadRising(const bool &) = 0;
+    virtual bool isFalling() const  = 0;
+    virtual void uploadMode(const bool &) = 0;
 
   public:
     virtual void resetPins() const = 0;

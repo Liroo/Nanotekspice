@@ -1,7 +1,7 @@
 .chipsets:
-clock		clockup
+clock		clock
 input		reset
-input		enable
+input		disable
 
 output		o0
 output		o1
@@ -14,14 +14,14 @@ output		o7
 output		o8
 output		o9
 
-output		cascade
+output		carry
 
 4017		johnson
 
 .links:
-clockup:1	johnson:14
+clock:1		johnson:14
 reset:1		johnson:15
-enable:1	johnson:13
+disable:1	johnson:13
 
 o0:1		johnson:3
 o1:1		johnson:2
@@ -34,5 +34,4 @@ o7:1		johnson:6
 o8:1		johnson:9
 o9:1		johnson:11
 
-cascade:1	johnson:12
-
+carry:1		johnson:12
