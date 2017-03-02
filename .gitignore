@@ -9,3 +9,7 @@ nanotekspice
 \#*
 *.tmp
 obj/
+
+# tmp file from test
+
+__test__/.tmp*
