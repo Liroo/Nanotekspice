@@ -1,6 +1,0 @@
-> nout=1
-out=0
-> exit
-> nout=0
-out=1
-> exit
