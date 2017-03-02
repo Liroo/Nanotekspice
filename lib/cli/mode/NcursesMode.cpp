@@ -1,10 +1,11 @@
 #include <algorithm>
 
 #include "NcursesMode.hpp"
+#include "CLIException.hpp"
 
 // So much work on this input user class
 
-nts::CLI::Mode::NcursesMode::NcursesMode() {
+nts::Mode::NcursesMode::NcursesMode() {
   if ((_win = initscr()) == NULL) {
     throw nts::Exception::CLIException(ECLINCURSESINIT);
   }
@@ -106,19 +107,19 @@ nts::CLI::Mode::NcursesMode::NcursesMode() {
   };
   // init some attributes
   _inputCmd = "";
-  nts::sout = new nts::CLI::Mode::NcursesOut(_win);
+  nts::sout = new nts::Mode::NcursesOut(_win);
   nts::serr = nts::sout;
   // separator used for ctrl + left/right keys
   // use to find next step where cursor should stop
   _moveSeparator = { ' ', '=' };
 }
 
-nts::CLI::Mode::NcursesMode::~NcursesMode() {
+nts::Mode::NcursesMode::~NcursesMode() {
   delete nts::sout;
   endwin();
 }
 
-std::string nts::CLI::Mode::NcursesMode::readCmd() {
+std::string nts::Mode::NcursesMode::readCmd() {
   int inputChar = 0;
 
   // init input
@@ -147,7 +148,7 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
     try {
       // is the input key is mapped with special function ?
       // otherwise, it goes to the normal handle in catch
-      nts::CLI::Mode::NcursesMode::KeyBind keyBind;
+      nts::Mode::NcursesMode::KeyBind keyBind;
 
       keyBind = _cmdMap.at(inputChar);
       keyBind();
@@ -162,7 +163,7 @@ std::string nts::CLI::Mode::NcursesMode::readCmd() {
   return _inputCmd;
 }
 
-void nts::CLI::Mode::NcursesMode::_changeBuffer(const std::string& str) {
+void nts::Mode::NcursesMode::_changeBuffer(const std::string& str) {
   // move to the begining of the input
   std::pair<int, int> cursorPosition = _getCursorPosition();
   _moveCursorPosition(cursorPosition.first - _inputCmdIndex, cursorPosition.second);
@@ -197,7 +198,7 @@ void nts::CLI::Mode::NcursesMode::_changeBuffer(const std::string& str) {
   _blockRefreshHistory = true;
 }
 
-void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
+void nts::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
   // handle printable key which mean this is an char from the command
   // don't add new line to the command
   if (inputChar != KEY_NEWLINE) {
@@ -239,7 +240,7 @@ void nts::CLI::Mode::NcursesMode::_addKeyToBuffer(int inputChar) {
   _blockRefreshHistory = false;
 }
 
-void nts::CLI::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
+void nts::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
   if (lastCmd == "") { return; }
   HistoryCmd::iterator lastCmdInHistory = _history.end();
 
@@ -254,7 +255,7 @@ void nts::CLI::Mode::NcursesMode::_addToHistory(const std::string& lastCmd) {
   _history.push_back(lastCmd);
 }
 
-bool nts::CLI::Mode::NcursesMode::_refreshHistoryFilter(const std::string& historyFilter) {
+bool nts::Mode::NcursesMode::_refreshHistoryFilter(const std::string& historyFilter) {
   // if filter is the same as before, don't touch the result
   if (historyFilter == _historyFilter) {
     return false;
@@ -277,7 +278,7 @@ bool nts::CLI::Mode::NcursesMode::_refreshHistoryFilter(const std::string& histo
   return true;
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
+void nts::Mode::NcursesMode::_handleKeyLeft() {
   // if cursor is already on the first position of the string, return
   if (_inputCmdIndex < 1) {
     return;
@@ -290,7 +291,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyLeft() {
   _blockRefreshHistory = false;
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
+void nts::Mode::NcursesMode::_handleKeyRight() {
   // if cursor is already on the first position of the string, return
   if (_inputCmdIndex > (int)(_inputCmd.size()) - 1) {
     return;
@@ -303,7 +304,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyRight() {
   _blockRefreshHistory = false;
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyCtrlLeft() {
+void nts::Mode::NcursesMode::_handleKeyCtrlLeft() {
   int leftShifted = _inputCmdIndex;
 
   // pass throught all separator currently on
@@ -328,7 +329,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyCtrlLeft() {
   _blockRefreshHistory = false;
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyCtrlRight() {
+void nts::Mode::NcursesMode::_handleKeyCtrlRight() {
   int leftShifted = _inputCmdIndex;
 
   // pass throught all separator currently on
@@ -353,7 +354,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyCtrlRight() {
   _blockRefreshHistory = false;
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyCtrlA() {
+void nts::Mode::NcursesMode::_handleKeyCtrlA() {
   // move correcty the cursor at first position
   std::pair<int, int> cursorPosition = _getCursorPosition();
   if (_moveCursorPosition(cursorPosition.first - _inputCmdIndex, cursorPosition.second)) {
@@ -361,7 +362,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyCtrlA() {
   }
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyCtrlE() {
+void nts::Mode::NcursesMode::_handleKeyCtrlE() {
   // move correcty the cursor at last position
   std::pair<int, int> cursorPosition = _getCursorPosition();
   if (_moveCursorPosition(cursorPosition.first + (_inputCmd.size() - _inputCmdIndex), cursorPosition.second)) {
@@ -369,7 +370,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyCtrlE() {
   }
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
+void nts::Mode::NcursesMode::_handleKeyDeleteCharacter() {
   if (_inputCmdIndex < 1) {
     return;
   }
@@ -402,7 +403,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyDeleteCharacter() {
   _blockRefreshHistory = false;
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
+void nts::Mode::NcursesMode::_handleKeyHistoryForward() {
   // refresh historyFilter if it change
   std::string actualFilter = _inputCmd.substr(0, _inputCmdIndex);
 
@@ -418,7 +419,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyHistoryForward() {
   _changeBuffer(_historyFilterResult[_historyFilterResultIndex]);
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyHistoryBackward() {
+void nts::Mode::NcursesMode::_handleKeyHistoryBackward() {
   // refresh historyFilter if it change
   std::string actualFilter = _inputCmd.substr(0, _inputCmdIndex);
 
@@ -434,7 +435,7 @@ void nts::CLI::Mode::NcursesMode::_handleKeyHistoryBackward() {
   _changeBuffer(_historyFilterResult[_historyFilterResultIndex]);
 }
 
-void nts::CLI::Mode::NcursesMode::_handleKeyCtrlD() {
+void nts::Mode::NcursesMode::_handleKeyCtrlD() {
   // stop reading input anyway on ctrl-D
   _readingInput = false;
   if (_inputCmd.size() == 0) {
@@ -446,11 +447,11 @@ void nts::CLI::Mode::NcursesMode::_handleKeyCtrlD() {
   }
 }
 
-void nts::CLI::Mode::NcursesMode::_handleUnhandledKey() {
+void nts::Mode::NcursesMode::_handleUnhandledKey() {
   return;
 }
 
-std::pair<int, int> nts::CLI::Mode::NcursesMode::_getCursorPosition() {
+std::pair<int, int> nts::Mode::NcursesMode::_getCursorPosition() {
   // create pair variable which really is the position of the cursor on the screen
   std::pair<int, int> cursorPosition;
   // getyx macro to get cursorPosition
@@ -459,7 +460,7 @@ std::pair<int, int> nts::CLI::Mode::NcursesMode::_getCursorPosition() {
   return cursorPosition;
 }
 
-bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
+bool nts::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
   int xNew = 0;
   int yNew = 0;
 
@@ -502,7 +503,7 @@ bool nts::CLI::Mode::NcursesMode::_moveCursorPosition(int x, int y) {
 
   useful to display many type on ncurses ui
 */
-nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const std::string& str) {
+nts::Mode::IOut& nts::Mode::NcursesOut::operator<<(const std::string& str) {
   if (_win) {
     wprintw(_win, "%s", str.c_str());
   } else {
@@ -511,7 +512,7 @@ nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const std::string& 
   return *this;
 }
 
-nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const char* str) {
+nts::Mode::IOut& nts::Mode::NcursesOut::operator<<(const char* str) {
   if (_win) {
     wprintw(_win, "%s", str);
   } else {
@@ -520,7 +521,7 @@ nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(const char* str) {
   return *this;
 }
 
-nts::CLI::Mode::IOut& nts::CLI::Mode::NcursesOut::operator<<(int i) {
+nts::Mode::IOut& nts::Mode::NcursesOut::operator<<(int i) {
   if (_win) {
     wprintw(_win, "%d", i);
   } else {

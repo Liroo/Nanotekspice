@@ -1,10 +1,13 @@
 #ifndef NCURSESMODE_HPP
 # define NCURSESMODE_HPP
 
+# include "Mode.hpp"
+
 # include <map>
 # include <vector>
 # include <unordered_set>
 # include <utility>
+# include <functional>
 # include "AMode.hpp"
 # include "ncurses.h"
 
@@ -20,7 +23,7 @@
 # define KEY_CLEFT 545
 # define KEY_CRIGHT 560
 
-class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
+class nts::Mode::NcursesMode: public nts::Mode::AMode {
   public:
     NcursesMode();
     virtual ~NcursesMode();
@@ -84,21 +87,6 @@ class nts::CLI::Mode::NcursesMode: public nts::CLI::Mode::AMode {
 
     std::pair<int, int> _getCursorPosition();
     bool _moveCursorPosition(int, int);
-};
-
-class nts::CLI::Mode::NcursesOut: public nts::CLI::Mode::IOut {
-  public:
-    NcursesOut(WINDOW *win) {
-      _win = win;
-    }
-
-  public:
-    virtual IOut& operator<<(const std::string&);
-    virtual IOut& operator<<(const char *);
-    virtual IOut& operator<<(int);
-
-  private:
-    WINDOW *_win;
 };
 
 #endif

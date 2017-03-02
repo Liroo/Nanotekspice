@@ -1,4 +1,6 @@
 #include "AComponent.hpp"
+#include "Mode.hpp"
+#include "IComponent.hpp"
 
 std::map<std::string, createFn_t> nts::AComponent::_fn = {
   { "4001", &nts::AComponent::create4001 },
@@ -95,6 +97,7 @@ void nts::AComponent::SetLink(size_t pin_num_this,
   (component.getPins())[pin_num_target]->setComp(this, pin_num_this);
 }
 
+
 void nts::AComponent::Dump() const {
   static std::map<nts::Tristate, std::string> states = {
     { nts::Tristate::UNDEFINED, "undefined" },
@@ -103,12 +106,12 @@ void nts::AComponent::Dump() const {
   };
   int x = 0;
 
-  std::cout << "[" << this->getType() << "\t" << _name << "]:\n";
+  *nts::sout << "[" << this->getType() << "\t" << _name << "]:\n";
   std::for_each(_pins.begin(), _pins.end(),
   [&x, this](const std::pair<int, nts::Pin *> &pair) {
     if (x >= _realPins) { return; }
     nts::Tristate state = (pair.second)->getState();
-    std::cout << "Pin n " << pair.first << ": \t" << states[state] << "\n";
+    *nts::sout << "Pin n" << pair.first << ": \t" << states[state] << "\n";
     x++;
   });
 }

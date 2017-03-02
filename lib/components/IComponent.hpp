@@ -1,6 +1,9 @@
 #ifndef ICOMPONENT_HPP
 # define ICOMPONENT_HPP
 
+# undef TRUE
+# undef FALSE
+
 namespace nts {
   enum Tristate {
     UNDEFINED = (-true),
