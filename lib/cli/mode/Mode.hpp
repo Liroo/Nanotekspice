@@ -5,6 +5,9 @@
 # include <string>
 # include "ncurses.h"
 
+# undef TRUE
+# undef FALSE
+
 # define CLI_PROMPT "> "
 # define CLI_PROMPT_SIZE 2
 

@@ -11,6 +11,9 @@
 # include "AMode.hpp"
 # include "ncurses.h"
 
+# undef TRUE
+# undef FALSE
+
 // this implementation is not really cross platform/terminal but it handle what I want to handle
 
 // Extension of ncurses key
