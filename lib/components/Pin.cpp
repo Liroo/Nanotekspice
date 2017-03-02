@@ -182,12 +182,10 @@ void nts::FlowChart::NAND(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *inputs = gate->getInputs();
   bool a = (*inputs)[0]->getState();
   bool b = (*inputs)[1]->getState();
-  bool res;
 
   if (!gate->hasDefinedPins()) { (*outputs)[0]->updateState(nts::Tristate::UNDEFINED); }
   else {
-    res = ~(a&b);
-    (*outputs)[0]->updateState((nts::Tristate)(res));
+    (*outputs)[0]->updateState((nts::Tristate)(bool)(!(a && b)));
   }
 }
 
@@ -228,7 +226,7 @@ void nts::FlowChart::flipFlopD(const nts::FlowChart *gate) {
     return;
   }
   //  clock rising (down -> up)
-  if ((*inputs)[0]->getLinkedComp()->isRising()) {
+  if ((*inputs)[0]->getLinkedComp() && (*inputs)[0]->getLinkedComp()->isRising()) {
     (*outputs)[0]->updateState(data);
     (*outputs)[1]->updateState(nts::Tristate(!data));
   }
