@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# nand passe pas
+# clocks
+
 #
 # TESTING COMPONENT 4001
 #

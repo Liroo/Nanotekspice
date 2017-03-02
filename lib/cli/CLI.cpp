@@ -233,14 +233,18 @@ bool nts::CLI::simulate() {
   //  compute components
   std::for_each(_comps.begin(), _comps.end(),
   [](const std::pair<std::string, nts::IComponent *> &comp) {
-    std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
+    if (std::regex_match((comp.second)->getType(), std::regex(REG_INPUTTYPES))) {
+      (comp.second)->Compute(1);
+    } else {
+      std::vector<nts::FlowChart *> gates = (comp.second)->getGates();
 
-    std::for_each(gates.begin(), gates.end(),
-    [&comp](const nts::FlowChart *gate) {
-      std::vector<nts::Pin *> *outPins = gate->getOutputs();
+      std::for_each(gates.begin(), gates.end(),
+      [&comp](const nts::FlowChart *gate) {
+        std::vector<nts::Pin *> *outPins = gate->getOutputs();
 
-      (comp.second)->Compute((*outPins)[0]->getID());
-    });
+        (comp.second)->Compute((*outPins)[0]->getID());
+      });
+    };
   });
 
   std::for_each(_config.inputValue.begin(), _config.inputValue.end(),
@@ -256,7 +260,6 @@ bool nts::CLI::simulate() {
         });
       if (it != _comps.end()) {
           inputValue.second = std::to_string(!value);
-          ((*it).second)->uploadMode(!value);
         }
       });
   return true;

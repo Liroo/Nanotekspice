@@ -11,14 +11,10 @@ nts::Clock::Clock(const std::string &name, const nts::Tristate &state) : ACompon
   _mode = nts::Tristate::UNDEFINED;
 }
 
-bool nts::Clock::isRising() const {
-  return _mode == nts::Tristate::TRUE;
+bool nts::Clock::isRising() {
+  return _pins[1]->getState() == nts::Tristate::TRUE;
 }
 
-bool nts::Clock::isFalling() const {
-  return _mode == nts::Tristate::FALSE;
-}
-
-void nts::Clock::uploadMode(const bool &value) {
-  _mode = (nts::Tristate)value;
+bool nts::Clock::isFalling() {
+  return _pins[1]->getState() == nts::Tristate::FALSE;
 }

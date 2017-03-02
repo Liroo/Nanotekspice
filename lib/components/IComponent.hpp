@@ -45,9 +45,8 @@ class nts::IComponent {
     virtual std::vector<nts::FlowChart *> getGates() const = 0;
 
   public:
-    virtual bool isRising() const  = 0;
-    virtual bool isFalling() const  = 0;
-    virtual void uploadMode(const bool &) = 0;
+    virtual bool isRising() = 0;
+    virtual bool isFalling() = 0;
 
   public:
     virtual void resetPins() const = 0;

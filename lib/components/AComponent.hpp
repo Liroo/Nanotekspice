@@ -35,7 +35,7 @@ class nts::AComponent : public nts::IComponent {
     virtual std::vector<nts::FlowChart *> getGates() const;
 
   protected:
-    void initPins(const int &, const std::vector<pinConf> &, const Tristate &state = Tristate::UNDEFINED);
+    void initPins(const int &, const std::vector<pinConf> &, const Tristate &state = Tristate::FALSE);
   public:
     virtual void resetPins() const;
     virtual int sizePins() const;
@@ -62,9 +62,8 @@ class nts::AComponent : public nts::IComponent {
     static std::map<std::string, createFn_t> _fn;
 
     public:
-      virtual bool isRising() const { return false; };
-      virtual bool isFalling() const { return false; };
-      virtual void uploadMode(const bool &val) { (void)val; };
+      virtual bool isRising() { return false; };
+      virtual bool isFalling() { return false; };
 
   protected:
     std::string _name;

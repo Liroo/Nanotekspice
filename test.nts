@@ -1,5 +1,9 @@
+# Toto
+# Titi
+
 .chipsets:
-output t
-input c
+input		a
+output		o
+
 .links:
-c:1 t:1
+a:1		o:1

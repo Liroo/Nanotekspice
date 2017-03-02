@@ -108,7 +108,7 @@ void nts::AComponent::Dump() const {
   [&x, this](const std::pair<int, nts::Pin *> &pair) {
     if (x >= _realPins) { return; }
     nts::Tristate state = (pair.second)->getState();
-    std::cout << "Pin n°" << pair.first << ": \t" << states[state] << "\n";
+    std::cout << "Pin n " << pair.first << ": \t" << states[state] << "\n";
     x++;
   });
 }
@@ -120,6 +120,7 @@ nts::Tristate nts::AComponent::Compute(size_t pin_num_this) {
   if (std::regex_match(this->getType(), std::regex(REG_INPUTTYPES)) ||
       _pins[pin_num_this]->getComputed() == nts::Tristate::TRUE) {
     _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);
+    _pins[pin_num_this]->updateState(_pins[pin_num_this]->getState());
     return _pins[pin_num_this]->getState();
   }
   _pins[pin_num_this]->setComputed(nts::Tristate::TRUE);

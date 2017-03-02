@@ -11,9 +11,8 @@ class nts::Clock : public nts::AComponent {
   public:
     Clock(const std::string &name, const nts::Tristate &state = nts::Tristate::UNDEFINED);
     virtual ~Clock() {};
-    virtual bool isRising() const;
-    virtual bool isFalling() const;
-    virtual void uploadMode(const bool &);
+    virtual bool isRising();
+    virtual bool isFalling();
 
   private:
     nts::Tristate _mode;
