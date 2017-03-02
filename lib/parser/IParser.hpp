@@ -30,6 +30,7 @@ namespace nts {
     std::string lexeme;
     ASTNodeType type;
     std::string value;
+    int line;
     std::vector<struct s_ast_node*> *children;
   } t_ast_node;
 

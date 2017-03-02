@@ -15,12 +15,14 @@ void nts::Parser::feed(std::string const& input) {
 
 nts::t_ast_node *nts::Parser::createNode(const std::string &lexeme,
                                           const nts::ASTNodeType &type,
-                                          const std::string &value) const {
+                                          const std::string &value,
+                                          const unsigned int line) const {
   nts::t_ast_node *newNode = new nts::t_ast_node(new std::vector<nts::t_ast_node *>);
   newNode->lexeme = lexeme;
   newNode->type = type;
   newNode->value = value;
   newNode->children = new std::vector<struct s_ast_node*>;
+  newNode->line = line;
   return newNode;
 }
 
@@ -29,20 +31,28 @@ void nts::Parser::initTree() {
   _ast->children->push_back(this->createNode("components list", nts::ASTNodeType::COMPONENT));
   _ast->children->push_back(this->createNode("link list", nts::ASTNodeType::LINK));
   _ast->children->push_back(this->createNode("link_end list", nts::ASTNodeType::LINK_END));
+  _ast->children->push_back(this->createNode("section list", nts::ASTNodeType::SECTION));
+  _ast->children->push_back(this->createNode("string list", nts::ASTNodeType::STRING));
+  _ast->children->push_back(this->createNode("newline list", nts::ASTNodeType::NEWLINE));
 }
 
-bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::string &line) const {
+bool nts::Parser::checkSection(nts::ASTSectionType &currentSection, const std::string &line, const unsigned int lineCount) const {
   std::smatch matched;
   std::regex regSect(REG_SECTION);
 
   std::regex_search(line, matched, regSect);
   if (matched.size() > 0) {
-    if (matched[1] == "links") { currentSection = nts::ASTSectionType::LINK; }
-    else if (matched[1] == "chipsets") { currentSection = nts::ASTSectionType::CHIPSET; }
+    if (matched[1] == "links") {
+      currentSection = nts::ASTSectionType::LINK;
+    }
+    else if (matched[1] == "chipsets") {
+      currentSection = nts::ASTSectionType::CHIPSET;
+    }
     else {
       currentSection = nts::ASTSectionType::UNDEFINED;
       throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSINVALIDSECTION);
     }
+    (*_ast->children)[3]->children->push_back(this->createNode("#", nts::ASTNodeType::SECTION, matched[1], lineCount));
     return true;
   }
   return false;
@@ -56,7 +66,23 @@ void nts::Parser::checkWrongSection(const std::string &line, const nts::ASTSecti
   }
 }
 
-void nts::Parser::addChipset(const std::string &line) {
+bool nts::Parser::checkString(const std::string &line, const unsigned int lineCount) {
+  std::smatch matched;
+  std::regex regCom(REG_COM);
+  if (!std::regex_match(line, regCom)) { return false; }
+  (*_ast->children)[4]->children->push_back(this->createNode("", nts::ASTNodeType::NEWLINE, line, lineCount));
+  return true;
+}
+
+bool nts::Parser::checkNewLine(const std::string &line, const unsigned int lineCount) {
+  std::smatch matched;
+  std::regex regEmpty(REG_EMPTY);
+  if (!std::regex_match(line, regEmpty)) { return false; }
+  (*_ast->children)[5]->children->push_back(this->createNode("", nts::ASTNodeType::STRING, "", lineCount));
+  return true;
+}
+
+void nts::Parser::addChipset(const std::string &line, const unsigned int lineCount) {
   std::string lexem;
   std::smatch matched;
 
@@ -81,17 +107,17 @@ void nts::Parser::addChipset(const std::string &line) {
       }) != (*_ast->children)[0]->children->end()) {
         throw nts::Exception::ParserException(std::cerr, matched[2].str() + ": " + EPARSARGEXISTS);
       }
-  (*_ast->children)[0]->children->push_back(this->createNode(lexem, nts::ASTNodeType::COMPONENT, line));
+  (*_ast->children)[0]->children->push_back(this->createNode(lexem, nts::ASTNodeType::COMPONENT, line, lineCount));
 }
 
-void nts::Parser::addLink(const std::string &line) {
+void nts::Parser::addLink(const std::string &line, const unsigned int lineCount) {
   std::smatch matched;
   std::regex regLinks(REG_LINKS);
 
   if (!std::regex_match(line, regLinks)) { throw nts::Exception::ParserException(std::cerr, line + ": " + EPARSBADSYNTAX); }
   std::regex_search(line, matched, regLinks);
-  (*_ast->children)[1]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK, matched[1]));
-  (*_ast->children)[2]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK_END, matched[2]));
+  (*_ast->children)[1]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK, matched[1], lineCount));
+  (*_ast->children)[2]->children->push_back(this->createNode(REG_LINK, nts::ASTNodeType::LINK_END, matched[2], lineCount));
 }
 
 nts::t_ast_node* nts::Parser::createTree() {
@@ -101,24 +127,26 @@ nts::t_ast_node* nts::Parser::createTree() {
   std::smatch matched;
   std::regex regCom(REG_COM);
   std::regex regEmpty(REG_EMPTY);
+  unsigned int lineCount = 0;
 
   this->initTree();
   //  loop file to store each line in `line` var and analyse it
   while (std::getline(input, line)) {
     //  check if section is valid (chipsets or links)
-    if (!this->checkSection(currentSection, line) &&
+    if (!this->checkSection(currentSection, line, lineCount) &&
         // ignore comments and empty lines
-        !std::regex_match(line, regCom) && !std::regex_match(line, regEmpty)) {
-          //  check if line is bad formated according to section
-        this->checkWrongSection(line, currentSection);
-        //  add chipset / link to the associated list
-        if (currentSection == nts::ASTSectionType::CHIPSET) { this->addChipset(line); }
-        else { this->addLink(line); }
-      }
+        !checkString(line, lineCount) && !checkNewLine(line, lineCount)) {
+      //  check if line is bad formated according to section
+      this->checkWrongSection(line, currentSection);
+      //  add chipset / link to the associated list
+      if (currentSection == nts::ASTSectionType::CHIPSET) { this->addChipset(line, lineCount); }
+      else { this->addLink(line, lineCount); }
     }
-    //  check if there are components and links
-    if ((*_ast->children)[0]->children->size() == 0) { throw nts::Exception::ParserException(std::cerr, EPARSMISSINGCHIPSETS); }
-    else if ((*_ast->children)[1]->children->size() == 0) { throw nts::Exception::ParserException(std::cerr, EPARSMISSINGLINKS); }
+    lineCount += 1;
+  }
+  //  check if there are components and links
+  if ((*_ast->children)[0]->children->size() == 0) { throw nts::Exception::ParserException(std::cerr, EPARSMISSINGCHIPSETS); }
+  else if ((*_ast->children)[1]->children->size() == 0) { throw nts::Exception::ParserException(std::cerr, EPARSMISSINGLINKS); }
 
   return _ast;
 }
