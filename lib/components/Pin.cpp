@@ -15,7 +15,6 @@ nts::Pin::Pin(const int &id,
 void nts::Pin::setComp(const IComponent *newComp, const int &pin) {
   _linkedComp = const_cast<IComponent *>(newComp);
   _linkedPin = _linkedComp->getPins()[pin];
-  _state = nts::Tristate::UNDEFINED;
 }
 
 nts::IComponent *nts::Pin::getLinkedComp() const {
