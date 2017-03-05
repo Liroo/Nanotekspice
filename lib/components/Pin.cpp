@@ -1,4 +1,5 @@
 #include "IComponent.hpp"
+#include "Comp4040.hpp"
 
 nts::Pin::Pin(const int &id,
               const nts::Tristate &state,
@@ -306,35 +307,37 @@ void nts::FlowChart::tenBitsJohnsonDecade(const nts::FlowChart *gate) {
 void nts::FlowChart::twelveBitsCounter(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *outputs = gate->getOutputs();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
-  auto it = std::find_if(outputs->begin(), outputs->end(),
-        [](nts::Pin *pin) {
-          return pin->getState() == nts::Tristate::TRUE;
-        });
-  int val = it - outputs->begin();
-  bool falling = (*inputs)[0]->getLinkedComp()->isFalling();
-  bool reset = (*inputs)[1]->getState();
+  int round = ((nts::AComponent *)((*outputs)[0]->getLinkedComp()))->getRound();
 
-  if (!gate->hasDefinedPins()) {
+  // init or reset value
+  if ((*inputs)[1]->getState() == nts::Tristate::TRUE || round == -1) {
     std::for_each(outputs->begin(), outputs->end(),
-    [](nts::Pin *pin) {
-      pin->updateState(nts::Tristate::UNDEFINED);
+      [](nts::Pin *item) {
+        item->updateState(nts::Tristate::FALSE);
     });
+  }
+  if ((*inputs)[1]->getState() == nts::Tristate::TRUE) {
+    ((nts::AComponent *)((*outputs)[0]->getLinkedComp()))->setRound(0);
     return;
   }
-  //  reset
-  if (reset || val == 12) {
-    std::for_each(outputs->begin(), outputs->end(),
-    [](nts::Pin *pin) {
-        pin->updateState(nts::Tristate::FALSE);
-      });
-    (*outputs)[0]->updateState(nts::Tristate::TRUE);
-    val = 0;
+
+  // if clock is TRUE (montante), don't do anything
+  if ((*inputs)[0]->getState() == nts::Tristate::TRUE) {
+    if (round == -1) {
+      ((nts::AComponent *)((*outputs)[0]->getLinkedComp()))->setRound(0);
+    }
+    return;
   }
-  if (!reset && val != 12 && falling) {
-    (*outputs)[val]->updateState(nts::Tristate::FALSE);
-    val = (val + 1) % 12;
-    (*outputs)[val]->updateState(nts::Tristate::TRUE);
-  }
+  round += 1;
+
+  size_t index = 0;
+  std::for_each(outputs->begin(), outputs->end(),
+    [&index, round](nts::Pin *item) {
+      item->updateState(nts::Tristate((round >> index) & 1));
+      index++;
+    });
+  ((nts::AComponent *)((*outputs)[0]->getLinkedComp()))->setRound(round);
+  return;
 }
 
 void nts::FlowChart::eightBitsShifter(const nts::FlowChart *gate) {

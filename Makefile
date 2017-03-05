@@ -53,7 +53,7 @@ INCDIRS := $(addprefix -I,$(shell find $(SRC_LIBDIR) -type d -print))
 CC = g++
 LDFLAGS = -L. -lnanotekspice -lncurses
 FLAGS = -W -Werror -Wextra -Wall
-FLAGS += -std=c++11 -Ofast
+FLAGS += -std=c++11
 CFLAGS = $(FLAGS) $(INCDIRS)
 ifeq ($(shell uname), Darwin)
 	AR = ar rc

@@ -5,6 +5,7 @@ namespace nts {
   class C4040;
 };
 
+# include <map>
 # include "AComponent.hpp"
 
 class nts::C4040 : public nts::AComponent {

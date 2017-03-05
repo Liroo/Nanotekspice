@@ -71,6 +71,15 @@ class nts::AComponent : public nts::IComponent {
     std::vector<nts::FlowChart *> _gates;
     std::map<int, nts::Pin *> _pins;
     const int _realPins;
+  private:
+    int _round = -1;
+  public:
+    int getRound() const {
+      return _round;
+    };
+    void setRound(int round) {
+      _round = round;
+    };
 };
 
 # include "Comp4001.hpp"
