@@ -53,7 +53,7 @@ class nts::IComponent {
 
   public:
     virtual int getRound() const = 0;
-    virtual void setRound() = 0;
+    virtual void setRound(int) = 0;
 
   public:
     virtual void resetPins() const = 0;

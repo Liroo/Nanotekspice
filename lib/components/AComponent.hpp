@@ -74,12 +74,8 @@ class nts::AComponent : public nts::IComponent {
   private:
     int _round = -1;
   public:
-    virtual int getRound() const {
-      return _round;
-    };
-    virtual void setRound(int round) {
-      _round = round;
-    };
+    virtual int getRound() const { return _round; };
+    virtual void setRound(int round) { _round = round; };
 };
 
 # include "Comp4001.hpp"
