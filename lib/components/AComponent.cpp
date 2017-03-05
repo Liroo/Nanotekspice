@@ -33,7 +33,7 @@ void nts::AComponent::initPins(const int &size,
   int i = 1;
 
   while (i <= size) {
-    _pins[i] = new Pin(i, pinsConf[i] != nts::pinConf::INPUT ? state : nts::Tristate::FALSE);
+    _pins[i] = new Pin(i, state);
     _pins[i]->setType(pinsConf[i]);
     i++;
   }

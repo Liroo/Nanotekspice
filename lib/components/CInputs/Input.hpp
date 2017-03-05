@@ -9,7 +9,7 @@ namespace nts {
 
 class nts::Input : public nts::AComponent {
   public:
-    Input(const std::string &name, const nts::Tristate &state = nts::Tristate::UNDEFINED);
+    Input(const std::string &name);
     virtual ~Input() {};
 };
 

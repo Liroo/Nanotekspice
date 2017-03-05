@@ -9,7 +9,7 @@ namespace nts {
 
 class nts::Clock : public nts::AComponent {
   public:
-    Clock(const std::string &name, const nts::Tristate &state = nts::Tristate::UNDEFINED);
+    Clock(const std::string &name);
     virtual ~Clock() {};
     virtual bool isRising();
     virtual bool isFalling();
