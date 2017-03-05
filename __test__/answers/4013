@@ -1,41 +1,17 @@
-nout=1
-out=0
-> > exit
-nout=0
-out=1
+nout=U
+out=U
 > > exit
 nout=U
 out=U
 > > exit
-nout=0
-out=1
+nout=U
+out=U
 > > exit
-nout=1
-out=0
+nout=U
+out=U
 > > exit
-nout=1
-out=1
-> > exit
-nout=1
-out=1
-> > exit
-nout=1
-out=0
-> > exit
-nout=1
-out=0
-> > exit
-nout=0
-out=1
-> > exit
-nout=0
-out=1
-> > exit
-nout=0
-out=1
-> > exit
-nout=1
-out=0
+nout=U
+out=U
 > > exit
 nout=1
 out=1
@@ -45,73 +21,57 @@ out=1
 > > exit
 nout=U
 out=U
-> > nout=1
-out=0
-> exit
+> > exit
+nout=U
+out=U
+> > exit
+nout=U
+out=U
+> > exit
+nout=U
+out=U
+> > exit
+nout=U
+out=U
+> > exit
+nout=U
+out=U
+> > exit
 nout=1
-out=0
-> > nout=1
-out=0
-> exit
-nout=0
 out=1
-> > nout=0
+> > exit
+nout=1
 out=1
+> > exit
+nout=U
+out=U
+> > nout=U
+out=U
 > exit
 nout=U
 out=U
-> > nout=0
-out=1
+> > nout=U
+out=U
 > exit
-nout=0
-out=1
-> > nout=0
-out=1
+nout=U
+out=U
+> > nout=U
+out=U
 > exit
-nout=1
-out=0
-> > nout=1
-out=0
+nout=U
+out=U
+> > nout=U
+out=U
 > exit
-nout=1
-out=1
-> > nout=1
-out=1
+nout=U
+out=U
+> > nout=U
+out=U
 > exit
-nout=1
-out=1
-> > nout=1
-out=1
-> exit
-nout=1
-out=0
-> > nout=1
-out=0
-> exit
-nout=1
-out=0
-> > nout=1
-out=0
-> exit
-nout=0
-out=1
-> > nout=0
-out=1
-> exit
-nout=0
-out=1
-> > nout=0
-out=1
-> exit
-nout=0
-out=1
-> > nout=0
-out=1
-> exit
-nout=1
-out=0
-> > nout=1
-out=0
+nout=U
+out=U
+> > nout=U
+out=U
 > exit
 nout=1
 out=1
@@ -125,6 +85,46 @@ out=1
 > exit
 nout=U
 out=U
+> > nout=U
+out=U
+> exit
+nout=U
+out=U
+> > nout=U
+out=U
+> exit
+nout=U
+out=U
+> > nout=U
+out=U
+> exit
+nout=U
+out=U
+> > nout=U
+out=U
+> exit
+nout=U
+out=U
+> > nout=U
+out=U
+> exit
+nout=U
+out=U
+> > nout=U
+out=U
+> exit
+nout=1
+out=1
 > > nout=1
-out=0
+out=1
+> exit
+nout=1
+out=1
+> > nout=1
+out=1
+> exit
+nout=U
+out=U
+> > nout=U
+out=U
 > exit
