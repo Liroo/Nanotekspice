@@ -240,4 +240,4 @@ else
     echo "Tests 4514 4bits decoder \t\t\tFAILED"
 fi
 
-rm -f .tmp*
+# rm -f .tmp*

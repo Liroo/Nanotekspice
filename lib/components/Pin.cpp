@@ -192,16 +192,16 @@ void nts::FlowChart::bitsAdder(const nts::FlowChart *gate) {
   std::vector<nts::Pin *> *outputs = gate->getOutputs();
   std::vector<nts::Pin *> *inputs = gate->getInputs();
   bool a = (*inputs)[0]->getState();
-  bool b = (*inputs)[0]->getState();
-  bool carryIn = (*inputs)[0]->getState();
+  bool b = (*inputs)[1]->getState();
+  bool carryIn = (*inputs)[2]->getState();
 
   if (!gate->hasDefinedPins()) {
     (*outputs)[0]->updateState(nts::Tristate::UNDEFINED);
     (*outputs)[1]->updateState(nts::Tristate::UNDEFINED);
     return;
   }
-  (*outputs)[0]->updateState(nts::Tristate(a && b));
-  (*outputs)[1]->updateState(nts::Tristate((a && b) || (a && carryIn) || (b && carryIn)));
+  (*outputs)[0]->updateState(nts::Tristate( ((a + b + carryIn) == 1 || (a + b + carryIn) == 3)) );
+  (*outputs)[1]->updateState(nts::Tristate( ((a + b + carryIn) > 1) ));
 }
 
 void nts::FlowChart::flipFlopD(const nts::FlowChart *gate) {
