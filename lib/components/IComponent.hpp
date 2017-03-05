@@ -52,6 +52,10 @@ class nts::IComponent {
     virtual bool isFalling() = 0;
 
   public:
+    virtual int getRound() const = 0;
+    virtual void setRound() = 0;
+
+  public:
     virtual void resetPins() const = 0;
     virtual int sizePins() const = 0;
 };

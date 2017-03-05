@@ -74,10 +74,10 @@ class nts::AComponent : public nts::IComponent {
   private:
     int _round = -1;
   public:
-    int getRound() const {
+    virtual int getRound() const {
       return _round;
     };
-    void setRound(int round) {
+    virtual void setRound(int round) {
       _round = round;
     };
 };
